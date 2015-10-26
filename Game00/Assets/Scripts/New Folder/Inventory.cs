@@ -6,20 +6,21 @@ using UnityEngine.EventSystems;
 
 public class Inventory : MonoBehaviour {
 
-    public int slotTotal;
-    public int columns;
-    public int slotSize;
-    public int slotPadding;
-    public GameObject slotPrefab;
-    public GameObject iconPrefab;
-    public Canvas canvas;
-    public EventSystem eventSystem;
+    public int slotTotal;   //Total amount of slots in inventory
+    public int columns;     //Total number of columns
+    public int slotSize;    //Size of slot side
+    public int slotPadding; //Space between slots
+    public GameObject slotPrefab;   //Slot prefab
+    public GameObject iconPrefab;   //Icon prefab
+    public Canvas canvas;   //Canvas
+    public EventSystem eventSystem; //Event System
 
-    private List<GameObject> allSlots;
-    private static GameObject hoverIcon;
-    private static Slot from, to;
-    private static int emptySlots;
+    private List<GameObject> allSlots;  //List of slots in inventory
+    private static GameObject hoverIcon;    //Icon shown when holding item
+    private static Slot from, to;   //Used as temporary holders when swapping items
+    private int emptySlots; //Total number of empty slots in inventory
 
+    //EmptySlots Getter/Setter
     public int EmptySlots
     {
         get
@@ -40,6 +41,7 @@ public class Inventory : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        //Delete inventory items by clicking off inventory
         if (Input.GetMouseButton(0))
         {
             if(!eventSystem.IsPointerOverGameObject(-1) && from != null)
@@ -50,6 +52,8 @@ public class Inventory : MonoBehaviour {
                 from = null;
             }
         }
+
+        //Move hover icon with mouse
         if (hoverIcon != null)
         {
             Vector2 position;
@@ -58,6 +62,7 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+    //Create inventory window with all slots
     private void CreateWindow()
     {
         allSlots = new List<GameObject>();
@@ -78,13 +83,14 @@ public class Inventory : MonoBehaviour {
                 newSlot.name = "Slot";
                 newSlot.transform.SetParent(this.transform.parent);
                 slotRect.localPosition = window.localPosition + new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y);
-                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize);
-                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize);
+                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize*canvas.scaleFactor);
+                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
                 allSlots.Add(newSlot);
             }
         }
     }
 
+    //Add item to inventory
     public void AddItem(Item item)
     {
         if(item.maxSize == 1)
@@ -97,6 +103,7 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+    //Add item into empty inventory slot
     private void PlaceEmpty(Item item)
     {
         if (emptySlots > 0)
@@ -114,6 +121,7 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+    //Add item into stack in inventory
     private void PlaceStack(Item item)
     {
         foreach (GameObject slot in allSlots)
@@ -134,6 +142,7 @@ public class Inventory : MonoBehaviour {
         }
     }
 
+    //Moves item to new slot in inventory/swap items
     public void MoveItem(GameObject clicked)
     {
         if (from == null)

@@ -7,9 +7,10 @@ using System;
 
 public class Slot : MonoBehaviour, IPointerClickHandler {
 
-    private Stack<Item> items;
-    public Text stackText;
+    private Stack<Item> items;  //Holds stack of items in slot
+    public Text stackText;  //Displays how many items in stack
 
+    //Items getter/setter
     public Stack<Item> Items
     {
         get
@@ -41,21 +42,25 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
 	
 	}
 
+    //Get item type
     public Item itemsInStack()
     {
         return items.Peek();
     }
 
+    //Check if slot is empty
     public bool IsEmpty()
     {
         return items.Count == 0;
     }
 
+    //Check if slot is full
     public bool isFull()
     {
         return itemsInStack().maxSize == items.Count;
     }
 
+    //Adds item to stack/slot
     public void AddItem(Item item)
     {
         items.Push(item);
@@ -66,6 +71,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         }
     }
 
+    //Adds stack of items to slot
     public void AddItems(Stack<Item> items)
     {
         this.items = new Stack<Item>(items);
@@ -74,6 +80,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
 
     }
 
+    //Get sprite for item in slot
     private Sprite ReturnItemIcon(Item item)
     {
         Sprite icon = new Sprite();
@@ -88,6 +95,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         return icon;
     }
 
+    //Uses item in slot
     private void UseItem()
     {
         if (!IsEmpty())
@@ -104,6 +112,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         }
     }
 
+    //Clears items in slot
     public void ClearSlot()
     {
         items.Clear();
@@ -111,6 +120,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         stackText.text = string.Empty;
     }
 
+    //Right click to use
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button == PointerEventData.InputButton.Right)
