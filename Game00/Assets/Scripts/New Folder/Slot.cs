@@ -30,11 +30,14 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         items = new Stack<Item>();
         RectTransform slotRect = GetComponent<RectTransform>();
         RectTransform txtRect = stackText.GetComponent<RectTransform>();
+        RectTransform iconRect = this.transform.GetChild(0).GetComponent<RectTransform>();
         int txtScaleFactor = (int)(slotRect.sizeDelta.x * 0.60);
         stackText.resizeTextMaxSize = txtScaleFactor;
         stackText.resizeTextMinSize = txtScaleFactor;
         txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotRect.sizeDelta.x);
         txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotRect.sizeDelta.y);
+        iconRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotRect.sizeDelta.x);
+        iconRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotRect.sizeDelta.y);
     }
 	
 	// Update is called once per frame
@@ -64,7 +67,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     public void AddItem(Item item)
     {
         items.Push(item);
-        this.transform.GetChild(1).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item);
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item);
         if (items.Count>1)
         {
             stackText.text = items.Count.ToString();
@@ -76,7 +79,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     {
         this.items = new Stack<Item>(items);
         stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
-        this.transform.GetChild(1).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
 
     }
 
@@ -106,7 +109,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
 
             if (IsEmpty())
             {
-                this.transform.GetChild(1).gameObject.GetComponent<Image>().sprite = null;
+                this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = null;
                 FindObjectOfType<Inventory>().EmptySlots++;
             }
         }
@@ -116,14 +119,14 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     public void ClearSlot()
     {
         items.Clear();
-        this.transform.GetChild(1).gameObject.GetComponent<Image>().sprite = null;
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = null;
         stackText.text = string.Empty;
     }
 
     //Right click to use
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Right)
+        if (eventData.button == PointerEventData.InputButton.Right && !GameObject.Find("HoverIcon"))
         {
             UseItem();
         }

@@ -50,6 +50,7 @@ public class Inventory : MonoBehaviour {
                 from.ClearSlot();
                 Destroy(GameObject.Find("HoverIcon"));
                 from = null;
+                emptySlots++;
             }
         }
 
@@ -81,10 +82,10 @@ public class Inventory : MonoBehaviour {
                 GameObject newSlot = (GameObject)Instantiate(slotPrefab);
                 RectTransform slotRect = newSlot.GetComponent<RectTransform>();
                 newSlot.name = "Slot";
-                newSlot.transform.SetParent(this.transform.parent);
-                slotRect.localPosition = window.localPosition + new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y);
+                newSlot.transform.SetParent(this.transform);
+                slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y);
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize*canvas.scaleFactor);
-                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
+                slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize*canvas.scaleFactor);
                 allSlots.Add(newSlot);
             }
         }
@@ -153,7 +154,7 @@ public class Inventory : MonoBehaviour {
                 from.GetComponent<Image>().color = Color.grey;
 
                 hoverIcon = (GameObject)Instantiate(iconPrefab);
-                hoverIcon.GetComponent<Image>().sprite = clicked.transform.GetChild(1).GetComponent<Image>().sprite;
+                hoverIcon.GetComponent<Image>().sprite = clicked.transform.GetChild(0).GetComponent<Image>().sprite;
                 hoverIcon.name = "HoverIcon";
 
                 RectTransform hoverTransform = hoverIcon.GetComponent<RectTransform>();
