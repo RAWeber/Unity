@@ -83,6 +83,17 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
 
     }
 
+    public Item RemoveItem()
+    {
+        Item returnItem = items.Pop();
+        stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
+        if (items.Count == 0)
+        {
+            ClearSlot();
+        }
+        return returnItem;
+    }
+
     //Get sprite for item in slot
     private Sprite ReturnItemIcon(Item item)
     {
@@ -119,7 +130,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     public void ClearSlot()
     {
         items.Clear();
-        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = null;
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = this.GetComponent<Image>().sprite;
         stackText.text = string.Empty;
     }
 
@@ -129,6 +140,10 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         if (eventData.button == PointerEventData.InputButton.Right && !GameObject.Find("HoverIcon"))
         {
             UseItem();
+        }
+        else
+        {
+            GetComponentInParent<Canvas>().GetComponentInChildren<Inventory>().MoveItem(this.gameObject);
         }
     }
 }

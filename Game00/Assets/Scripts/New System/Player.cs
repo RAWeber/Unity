@@ -4,11 +4,12 @@ using System.Collections;
 public class Player : MonoBehaviour {
 
     public int speed;   //Movement speed
-    public Inventory inventory; //Player inventory
+    //public Inventory inventory; //Player inventory
+    private Inventory inventory;
 
 	// Use this for initialization
 	void Start () {
-	
+        inventory = GameObject.Find("InventoryWindow").GetComponent<Inventory>();
 	}
 	
 	// Update is called once per frame

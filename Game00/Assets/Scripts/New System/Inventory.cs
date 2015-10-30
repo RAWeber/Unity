@@ -15,10 +15,14 @@ public class Inventory : MonoBehaviour {
     public Canvas canvas;   //Canvas
     public EventSystem eventSystem; //Event System
 
+    private CanvasGroup canvasGroup;    //Canvas group to open/close
     private List<GameObject> allSlots;  //List of slots in inventory
     private static GameObject hoverIcon;    //Icon shown when holding item
-    private static Slot from, to;   //Used as temporary holders when swapping items
+    private Slot from, to;   //Used as temporary holders when swapping items
     private int emptySlots; //Total number of empty slots in inventory
+
+    private static GameObject stackSplitter;
+    public GameObject splitterPrefab;
 
     //EmptySlots Getter/Setter
     public int EmptySlots
@@ -37,7 +41,8 @@ public class Inventory : MonoBehaviour {
     // Use this for initialization
     void Start () {
         CreateWindow();
-	}
+        canvasGroup = this.GetComponent<CanvasGroup>();
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -60,6 +65,18 @@ public class Inventory : MonoBehaviour {
             Vector2 position;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, Input.mousePosition, canvas.worldCamera, out position);
             hoverIcon.transform.position = canvas.transform.TransformPoint(position);
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            if (canvasGroup.alpha == 0)
+            {
+                open();
+            }
+            else
+            {
+                close();
+            }
         }
     }
 
@@ -146,32 +163,26 @@ public class Inventory : MonoBehaviour {
     //Moves item to new slot in inventory/swap items
     public void MoveItem(GameObject clicked)
     {
+        Slot clickedSlot = clicked.GetComponent<Slot>();
+        if (Input.GetKey(KeyCode.LeftShift) && !clickedSlot.IsEmpty() && !GameObject.Find("HoverIcon"))
+        {
+            Debug.Log("HI");
+            createSplitter(clickedSlot);
+            return;
+        }
+
         if (from == null)
         {
-            if (!clicked.GetComponent<Slot>().IsEmpty())
+            if (!clickedSlot.IsEmpty())
             {
-                from = clicked.GetComponent<Slot>();
+                from = clickedSlot;
                 from.GetComponent<Image>().color = Color.grey;
 
-                hoverIcon = (GameObject)Instantiate(iconPrefab);
-                hoverIcon.GetComponent<Image>().sprite = clicked.transform.GetChild(0).GetComponent<Image>().sprite;
-                hoverIcon.name = "HoverIcon";
-
-                RectTransform hoverTransform = hoverIcon.GetComponent<RectTransform>();
-                RectTransform clickedTransform = clicked.GetComponent<RectTransform>();
-
-                hoverTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, clickedTransform.sizeDelta.x);
-                hoverTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, clickedTransform.sizeDelta.y);
-                hoverIcon.transform.SetParent(GameObject.Find("Canvas").transform, true);
-                hoverIcon.transform.localScale = from.gameObject.transform.localScale;
+                createHoverIcon(clickedSlot);
             }
         }else if(to == null)
         {
-            to = clicked.GetComponent<Slot>();
-            Destroy(GameObject.Find("HoverIcon"));
-        }
-        if(from!=null && to!=null)
-        {
+            to = clickedSlot;
             Stack<Item> tmpTo = new Stack<Item>(to.Items);
             to.AddItems(from.Items);
             if (tmpTo.Count == 0)
@@ -185,7 +196,60 @@ public class Inventory : MonoBehaviour {
             from.GetComponent<Image>().color = Color.white;
             to = null;
             from = null;
-            hoverIcon = null;
+            Destroy(GameObject.Find("HoverIcon"));
         }
+    }
+
+    public void createHoverIcon(Slot slot)
+    {
+        hoverIcon = (GameObject)Instantiate(iconPrefab);
+        hoverIcon.GetComponent<Image>().sprite = slot.transform.GetChild(0).GetComponent<Image>().sprite;
+        hoverIcon.GetComponentInChildren<Text>().text = slot.transform.GetChild(1).GetComponent<Text>().text;
+        hoverIcon.name = "HoverIcon";
+
+        RectTransform hoverTransform = hoverIcon.GetComponent<RectTransform>();
+        RectTransform clickedTransform = slot.GetComponent<RectTransform>();
+
+        hoverTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, clickedTransform.sizeDelta.x);
+        hoverTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, clickedTransform.sizeDelta.y);
+        hoverIcon.transform.SetParent(GameObject.Find("Canvas").transform, true);
+        hoverIcon.transform.localScale = slot.gameObject.transform.localScale;
+    }
+
+    private void createSplitter(Slot clickedSlot)
+    {
+        stackSplitter = (GameObject)Instantiate(splitterPrefab);
+        stackSplitter.name = "StackSplitter";
+        stackSplitter.transform.SetParent(GameObject.Find("Canvas").transform, true);
+        stackSplitter.GetComponent<StackSplitter>().slot = clickedSlot;
+
+        Vector2 position;
+        Vector3 slotPos = new Vector3(clickedSlot.transform.position.x + clickedSlot.GetComponent<RectTransform>().sizeDelta.x / 2, clickedSlot.transform.position.y - clickedSlot.GetComponent<RectTransform>().sizeDelta.y * 2);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(this.GetComponentInParent<Canvas>().transform as RectTransform, slotPos, this.GetComponentInParent<Canvas>().worldCamera, out position);
+        stackSplitter.transform.position = this.GetComponentInParent<Canvas>().transform.TransformPoint(position);
+
+        RectTransform splitRect = stackSplitter.GetComponent<RectTransform>();
+        splitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 100 * this.GetComponentInParent<Canvas>().scaleFactor);
+        splitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 50 * this.GetComponentInParent<Canvas>().scaleFactor);
+    }
+
+    private void close()
+    {
+        canvasGroup.alpha = 0;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+        if (from != null)
+        {
+            from.GetComponent<Image>().color = Color.white;
+            from = null;
+            Destroy(GameObject.Find("HoverIcon"));
+        }
+    }
+
+    private void open()
+    {
+        canvasGroup.alpha = 1;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
     }
 }
