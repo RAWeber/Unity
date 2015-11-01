@@ -10,10 +10,10 @@ public class Player : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         inventory = GameObject.Find("InventoryWindow").GetComponent<Inventory>();
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update () {
         HandleMovement();
 	}
 

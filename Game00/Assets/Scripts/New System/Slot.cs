@@ -26,8 +26,6 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
 
     // Use this for initialization
     void Start () {
-
-        items = new Stack<Item>();
         RectTransform slotRect = GetComponent<RectTransform>();
         RectTransform txtRect = stackText.GetComponent<RectTransform>();
         RectTransform iconRect = this.transform.GetChild(0).GetComponent<RectTransform>();
@@ -38,6 +36,11 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotRect.sizeDelta.y);
         iconRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotRect.sizeDelta.x);
         iconRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotRect.sizeDelta.y);
+    }
+
+    void Awake()
+    {
+        items = new Stack<Item>();
     }
 	
 	// Update is called once per frame
@@ -54,6 +57,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     //Check if slot is empty
     public bool IsEmpty()
     {
+        if (items == null) return true;
         return items.Count == 0;
     }
 
@@ -75,10 +79,29 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     }
 
     //Adds stack of items to slot
-    public void AddItems(Stack<Item> items)
+    public void SetItems(Slot slot)
     {
-        this.items = new Stack<Item>(items);
-        stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
+        if (this.items.Count != 0 && this.itemsInStack() == slot.itemsInStack())
+        {
+            while (this.itemsInStack().maxSize > this.items.Count && slot.items.Count!=0)
+            {
+                this.items.Push(slot.items.Pop());
+            }
+            if (slot.items.Count == 0)
+            {
+                Debug.Log("DESTROYED");
+                Destroy(GameObject.Find("HoverIcon"));
+            }
+            else
+            {
+                Debug.Log(slot.items.Count);
+            }
+        }
+        else
+        {
+            this.items = new Stack<Item>(slot.items);
+        }
+        stackText.text = this.items.Count > 1 ? this.items.Count.ToString() : string.Empty;
         this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
 
     }

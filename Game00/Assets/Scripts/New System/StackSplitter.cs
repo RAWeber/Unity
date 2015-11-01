@@ -10,12 +10,12 @@ public class StackSplitter : MonoBehaviour {
     private int counter;
 
 
-    public Slot slot;
+    public GameObject slot;
     public Text splitterText;
 
 	// Use this for initialization
 	void Start () {
-        max = slot.Items.Count;
+        max = slot.GetComponent<Slot>().Items.Count;
         counter = Int32.Parse(splitterText.text);
     }
 	
@@ -44,13 +44,18 @@ public class StackSplitter : MonoBehaviour {
 
     public void splitStack()
     {
-        List<Item> splitList = new List<Item>();
-        GetComponentInParent<Canvas>().GetComponentInChildren<Inventory>().createHoverIcon(slot);
-        GameObject.Find("HoverIcon").GetComponentInChildren<Text>().text = counter > 1 ? counter.ToString() : string.Empty; ;
-
-        for (; counter > 0; counter--)
+        if (counter != 0)
         {
-            splitList.Add(slot.RemoveItem());
+            Stack<Item> splitList = new Stack<Item>();
+            GetComponentInParent<Canvas>().GetComponentInChildren<Inventory>().createHoverIcon(slot.GetComponent<Slot>());
+            GameObject.Find("HoverIcon").GetComponentInChildren<Text>().text = counter > 1 ? counter.ToString() : string.Empty; ;
+
+            for (; counter > 0; counter--)
+            {
+                //splitList.Push(slot.GetComponent<Slot>().RemoveItem());
+                GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Push(slot.GetComponent<Slot>().RemoveItem());
+            }
+            //GameObject.Find("HoverIcon").GetComponent<Slot>().Items = splitList;
         }
         Destroy(GameObject.Find("StackSplitter"));
     }

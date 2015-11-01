@@ -11,13 +11,13 @@ public class Inventory : MonoBehaviour {
     public int slotSize;    //Size of slot side
     public int slotPadding; //Space between slots
     public GameObject slotPrefab;   //Slot prefab
-    public GameObject iconPrefab;   //Icon prefab
+    public GameObject hoverPrefab;   //Icon prefab
     public Canvas canvas;   //Canvas
     public EventSystem eventSystem; //Event System
 
     private CanvasGroup canvasGroup;    //Canvas group to open/close
     private List<GameObject> allSlots;  //List of slots in inventory
-    private static GameObject hoverIcon;    //Icon shown when holding item
+    private GameObject hoverIcon;    //Icon shown when holding item
     private Slot from, to;   //Used as temporary holders when swapping items
     private int emptySlots; //Total number of empty slots in inventory
 
@@ -35,6 +35,19 @@ public class Inventory : MonoBehaviour {
         set
         {
             emptySlots = value;
+        }
+    }
+
+    public GameObject HoverIcon
+    {
+        get
+        {
+            return hoverIcon;
+        }
+
+        set
+        {
+            hoverIcon = value;
         }
     }
 
@@ -58,7 +71,6 @@ public class Inventory : MonoBehaviour {
                 emptySlots++;
             }
         }
-
         //Move hover icon with mouse
         if (hoverIcon != null)
         {
@@ -163,37 +175,84 @@ public class Inventory : MonoBehaviour {
     //Moves item to new slot in inventory/swap items
     public void MoveItem(GameObject clicked)
     {
-        Slot clickedSlot = clicked.GetComponent<Slot>();
+        Slot clickedSlot = clicked.GetComponent<Slot>();    //Create slot from clicked gameobject
+
+        //If holding shift, make a splitStack window
         if (Input.GetKey(KeyCode.LeftShift) && !clickedSlot.IsEmpty() && !GameObject.Find("HoverIcon"))
         {
-            Debug.Log("HI");
             createSplitter(clickedSlot);
             return;
         }
 
-        if (from == null)
+        //If from is null and slot has items in it, set from equal to slicked slot
+        if (hoverIcon == null)
         {
+            Debug.Log("FROM");
             if (!clickedSlot.IsEmpty())
             {
                 from = clickedSlot;
                 from.GetComponent<Image>().color = Color.grey;
 
-                createHoverIcon(clickedSlot);
+                createHoverIcon(from);
+                hoverIcon.GetComponent<Slot>().Items = from.Items;
             }
-        }else if(to == null)
+        }
+        //If the hoverIcon exists and has items in it, run code
+        else if (hoverIcon != null) {
+            //from = hoverIcon.GetComponent<Slot>();
+            to = clickedSlot;
+
+            //If the slot clicked has Items in it, swap the items held with the items in slot
+            if (to.Items.Count != 0)
+            {
+                from.GetComponent<Image>().color = Color.white;
+                from.ClearSlot();
+                from = clickedSlot;
+                from.GetComponent<Image>().color = Color.gray;
+                to.SetItems(hoverIcon.GetComponent<Slot>());
+                Destroy(GameObject.Find("HoverIcon"));
+                createHoverIcon(from);
+                hoverIcon.GetComponent<Slot>().Items = from.Items;
+                to = null;
+
+
+                //Destroy(GameObject.Find("HoverIcon"));
+                //createHoverIcon(to);
+                //Stack<Item> tmpTo = new Stack<Item>(to.Items);
+                //to.SetItems(from);
+                //from.GetComponent<Image>().color = Color.white;
+                //from = hoverIcon.GetComponent<Slot>();
+                //from.Items=tmpTo;
+                //to = null;
+            }
+            //If clicked slot is empty place items into slot
+            else
+            {
+                to.SetItems(from);
+                from.GetComponent<Image>().color = Color.white;
+                from.ClearSlot();
+                to = null;
+                from = null;
+                Destroy(GameObject.Find("HoverIcon"));
+            }
+        return;
+        }
+
+        //If to is null set to to clicked slot, and swap
+        else if(to == null)
         {
+            Debug.Log("TO");
             to = clickedSlot;
             Stack<Item> tmpTo = new Stack<Item>(to.Items);
-            to.AddItems(from.Items);
+            to.SetItems(from);
             if (tmpTo.Count == 0)
             {
                 from.ClearSlot();
             }
             else
             {
-                from.AddItems(tmpTo);
+                //from.SetItems(tmpTo);
             }
-            from.GetComponent<Image>().color = Color.white;
             to = null;
             from = null;
             Destroy(GameObject.Find("HoverIcon"));
@@ -202,7 +261,7 @@ public class Inventory : MonoBehaviour {
 
     public void createHoverIcon(Slot slot)
     {
-        hoverIcon = (GameObject)Instantiate(iconPrefab);
+        hoverIcon = (GameObject)Instantiate(hoverPrefab);
         hoverIcon.GetComponent<Image>().sprite = slot.transform.GetChild(0).GetComponent<Image>().sprite;
         hoverIcon.GetComponentInChildren<Text>().text = slot.transform.GetChild(1).GetComponent<Text>().text;
         hoverIcon.name = "HoverIcon";
@@ -221,7 +280,7 @@ public class Inventory : MonoBehaviour {
         stackSplitter = (GameObject)Instantiate(splitterPrefab);
         stackSplitter.name = "StackSplitter";
         stackSplitter.transform.SetParent(GameObject.Find("Canvas").transform, true);
-        stackSplitter.GetComponent<StackSplitter>().slot = clickedSlot;
+        stackSplitter.GetComponent<StackSplitter>().slot = clickedSlot.gameObject;
 
         Vector2 position;
         Vector3 slotPos = new Vector3(clickedSlot.transform.position.x + clickedSlot.GetComponent<RectTransform>().sizeDelta.x / 2, clickedSlot.transform.position.y - clickedSlot.GetComponent<RectTransform>().sizeDelta.y * 2);
