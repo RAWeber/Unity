@@ -191,28 +191,36 @@ public class Inventory : MonoBehaviour {
             if (!clickedSlot.IsEmpty())
             {
                 from = clickedSlot;
-                from.GetComponent<Image>().color = Color.grey;
+                //from.GetComponent<Image>().color = Color.grey;
 
                 createHoverIcon(from);
-                hoverIcon.GetComponent<Slot>().Items = from.Items;
+                //GameObject.Find("HoverIcon").GetComponent<Slot>().Items = from.Items;
+                while (!from.IsEmpty())
+                {
+                    GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Push(from.RemoveItem());
+                }
             }
         }
         //If the hoverIcon exists and has items in it, run code
         else if (hoverIcon != null) {
             //from = hoverIcon.GetComponent<Slot>();
             to = clickedSlot;
+            if (from != null)
+            {
+                from.ClearSlot();
+            }
 
             //If the slot clicked has Items in it, swap the items held with the items in slot
             if (to.Items.Count != 0)
             {
-                from.GetComponent<Image>().color = Color.white;
-                from.ClearSlot();
-                from = clickedSlot;
-                from.GetComponent<Image>().color = Color.gray;
-                to.SetItems(hoverIcon.GetComponent<Slot>());
+                from.SetItems(hoverIcon.GetComponent<Slot>());
+                Debug.Log("Success");
                 Destroy(GameObject.Find("HoverIcon"));
-                createHoverIcon(from);
-                hoverIcon.GetComponent<Slot>().Items = from.Items;
+                createHoverIcon(to);
+                hoverIcon.GetComponent<Slot>().Items = to.Items;
+                to.SetItems(from);
+                from.ClearSlot();
+                from = null;
                 to = null;
 
 
@@ -228,9 +236,7 @@ public class Inventory : MonoBehaviour {
             //If clicked slot is empty place items into slot
             else
             {
-                to.SetItems(from);
-                from.GetComponent<Image>().color = Color.white;
-                from.ClearSlot();
+                to.SetItems(hoverIcon.GetComponent<Slot>());
                 to = null;
                 from = null;
                 Destroy(GameObject.Find("HoverIcon"));
@@ -239,24 +245,24 @@ public class Inventory : MonoBehaviour {
         }
 
         //If to is null set to to clicked slot, and swap
-        else if(to == null)
-        {
-            Debug.Log("TO");
-            to = clickedSlot;
-            Stack<Item> tmpTo = new Stack<Item>(to.Items);
-            to.SetItems(from);
-            if (tmpTo.Count == 0)
-            {
-                from.ClearSlot();
-            }
-            else
-            {
-                //from.SetItems(tmpTo);
-            }
-            to = null;
-            from = null;
-            Destroy(GameObject.Find("HoverIcon"));
-        }
+        //else if(to == null)
+        //{
+        //    Debug.Log("TO");
+        //    to = clickedSlot;
+        //    Stack<Item> tmpTo = new Stack<Item>(to.Items);
+        //    to.SetItems(from);
+        //    if (tmpTo.Count == 0)
+        //    {
+        //        from.ClearSlot();
+        //    }
+        //    else
+        //    {
+        //        //from.SetItems(tmpTo);
+        //    }
+        //    to = null;
+        //    from = null;
+        //    Destroy(GameObject.Find("HoverIcon"));
+        //}
     }
 
     public void createHoverIcon(Slot slot)
