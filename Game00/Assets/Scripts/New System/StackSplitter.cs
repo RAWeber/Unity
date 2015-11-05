@@ -56,6 +56,10 @@ public class StackSplitter : MonoBehaviour {
                 GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Push(slot.GetComponent<Slot>().RemoveItem());
             }
             //GameObject.Find("HoverIcon").GetComponent<Slot>().Items = splitList;
+            if (GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Count != GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Peek().maxSize)
+            {
+                FindObjectOfType<Inventory>().EmptySlots--;
+            }
         }
         Destroy(GameObject.Find("StackSplitter"));
     }

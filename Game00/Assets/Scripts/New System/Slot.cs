@@ -79,31 +79,29 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     }
 
     //Adds stack of items to slot
-    public void SetItems(Slot slot)
+    public Stack<Item> SetItems(Stack<Item> items)
     {
-        if (this.items.Count != 0 && this.itemsInStack() == slot.itemsInStack())
+        Stack<Item> returnStack = items;
+        if (this.items.Count != 0 && this.itemsInStack() == items.Peek())
         {
-            while (this.itemsInStack().maxSize > this.items.Count && slot.items.Count!=0)
+            while (this.itemsInStack().maxSize > this.items.Count && returnStack.Count!=0)
             {
-                this.items.Push(slot.items.Pop());
+                this.items.Push(returnStack.Pop());
             }
-            if (slot.items.Count == 0)
+            if (returnStack.Count == 0)
             {
-                Debug.Log("DESTROYED");
-                Destroy(GameObject.Find("HoverIcon"));
-            }
-            else
-            {
-                Debug.Log(slot.items.Count);
+                Debug.Log("WAHHHHH");
+                FindObjectOfType<Inventory>().EmptySlots++;
             }
         }
         else
         {
-            this.items = new Stack<Item>(slot.items);
+            returnStack = this.items;
+            this.items = new Stack<Item>(items);
         }
         stackText.text = this.items.Count > 1 ? this.items.Count.ToString() : string.Empty;
         this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
-
+        return returnStack;
     }
 
     public Item RemoveItem()

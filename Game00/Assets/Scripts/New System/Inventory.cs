@@ -10,6 +10,7 @@ public class Inventory : MonoBehaviour {
     public int columns;     //Total number of columns
     public int slotSize;    //Size of slot side
     public int slotPadding; //Space between slots
+    public int inventoryTitle;  //Title bar
     public GameObject slotPrefab;   //Slot prefab
     public GameObject hoverPrefab;   //Icon prefab
     public Canvas canvas;   //Canvas
@@ -56,18 +57,18 @@ public class Inventory : MonoBehaviour {
         CreateWindow();
         canvasGroup = this.GetComponent<CanvasGroup>();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
         //Delete inventory items by clicking off inventory
         if (Input.GetMouseButton(0))
         {
-            if(!eventSystem.IsPointerOverGameObject(-1) && from != null)
+            if (!eventSystem.IsPointerOverGameObject(-1) && hoverIcon != null)
             {
-                from.GetComponent<Image>().color = Color.white;
-                from.ClearSlot();
+                //from.ClearSlot();
                 Destroy(GameObject.Find("HoverIcon"));
-                from = null;
+                //from = null;
                 emptySlots++;
             }
         }
@@ -90,6 +91,7 @@ public class Inventory : MonoBehaviour {
                 close();
             }
         }
+        Debug.Log(emptySlots);
     }
 
     //Create inventory window with all slots
@@ -100,7 +102,7 @@ public class Inventory : MonoBehaviour {
 
         RectTransform window = this.gameObject.GetComponent<RectTransform>();
         int width = columns * slotSize + columns * slotPadding + slotPadding;
-        int height = (slotTotal / columns) * slotSize + (slotTotal / columns) * slotPadding + slotPadding;
+        int height = (slotTotal / columns) * slotSize + (slotTotal / columns) * slotPadding + slotPadding +inventoryTitle;
         window.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
 
@@ -112,7 +114,7 @@ public class Inventory : MonoBehaviour {
                 RectTransform slotRect = newSlot.GetComponent<RectTransform>();
                 newSlot.name = "Slot";
                 newSlot.transform.SetParent(this.transform);
-                slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y);
+                slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y-inventoryTitle);
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize*canvas.scaleFactor);
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize*canvas.scaleFactor);
                 allSlots.Add(newSlot);
@@ -180,6 +182,7 @@ public class Inventory : MonoBehaviour {
         //If holding shift, make a splitStack window
         if (Input.GetKey(KeyCode.LeftShift) && !clickedSlot.IsEmpty() && !GameObject.Find("HoverIcon"))
         {
+            from = clickedSlot;
             createSplitter(clickedSlot);
             return;
         }
@@ -187,7 +190,6 @@ public class Inventory : MonoBehaviour {
         //If from is null and slot has items in it, set from equal to slicked slot
         if (hoverIcon == null)
         {
-            Debug.Log("FROM");
             if (!clickedSlot.IsEmpty())
             {
                 from = clickedSlot;
@@ -205,22 +207,31 @@ public class Inventory : MonoBehaviour {
         else if (hoverIcon != null) {
             //from = hoverIcon.GetComponent<Slot>();
             to = clickedSlot;
-            if (from != null)
-            {
-                from.ClearSlot();
-            }
+            //if (from != null)
+            //{
+            //    from.ClearSlot();
+            //}
 
             //If the slot clicked has Items in it, swap the items held with the items in slot
             if (to.Items.Count != 0)
             {
-                from.SetItems(hoverIcon.GetComponent<Slot>());
-                Debug.Log("Success");
-                Destroy(GameObject.Find("HoverIcon"));
+                //from.SetItems(hoverIcon.GetComponent<Slot>().Items);
+                Stack<Item> tmpHover = hoverIcon.GetComponent<Slot>().Items;
+                //Stack<Item> tmpTo=to.SetItems(hoverIcon.GetComponent<Slot>().Items);
                 createHoverIcon(to);
-                hoverIcon.GetComponent<Slot>().Items = to.Items;
-                to.SetItems(from);
-                from.ClearSlot();
-                from = null;
+                hoverIcon.GetComponent<Slot>().Items=to.SetItems(tmpHover);
+                if (hoverIcon.GetComponent<Slot>().Items.Count == 0)
+                {
+                    DestroyImmediate(GameObject.Find("HoverIcon"));
+                    DestroyImmediate(GameObject.Find("HoverIcon"));
+                }
+                else
+                {
+                    hoverIcon.GetComponentInChildren<Text>().text = hoverIcon.GetComponent<Slot>().Items.Count > 1 ? hoverIcon.GetComponent<Slot>().Items.Count.ToString() : string.Empty;
+                }
+               
+                //from.ClearSlot();
+                //from = null;
                 to = null;
 
 
@@ -236,12 +247,11 @@ public class Inventory : MonoBehaviour {
             //If clicked slot is empty place items into slot
             else
             {
-                to.SetItems(hoverIcon.GetComponent<Slot>());
+                to.SetItems(hoverIcon.GetComponent<Slot>().Items);
                 to = null;
                 from = null;
                 Destroy(GameObject.Find("HoverIcon"));
             }
-        return;
         }
 
         //If to is null set to to clicked slot, and swap
@@ -267,6 +277,7 @@ public class Inventory : MonoBehaviour {
 
     public void createHoverIcon(Slot slot)
     {
+        Destroy(GameObject.Find("HoverIcon"));
         hoverIcon = (GameObject)Instantiate(hoverPrefab);
         hoverIcon.GetComponent<Image>().sprite = slot.transform.GetChild(0).GetComponent<Image>().sprite;
         hoverIcon.GetComponentInChildren<Text>().text = slot.transform.GetChild(1).GetComponent<Text>().text;
@@ -298,15 +309,25 @@ public class Inventory : MonoBehaviour {
         splitRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 50 * this.GetComponentInParent<Canvas>().scaleFactor);
     }
 
-    private void close()
+    public void close()
     {
         canvasGroup.alpha = 0;
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
-        if (from != null)
+        if (hoverIcon != null)
         {
-            from.GetComponent<Image>().color = Color.white;
-            from = null;
+            if (from.itemsInStack() == hoverIcon.GetComponent<Slot>().itemsInStack() && !from.isFull())
+            {
+                from.SetItems(hoverIcon.GetComponent<Slot>().Items);
+            }
+            else
+            {
+                while (!hoverIcon.GetComponent<Slot>().IsEmpty())
+                {
+                    AddItem(hoverIcon.GetComponent<Slot>().Items.Pop());
+                }
+                emptySlots++;
+            }
             Destroy(GameObject.Find("HoverIcon"));
         }
     }
