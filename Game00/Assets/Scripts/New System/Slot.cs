@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using System;
 
-public class Slot : MonoBehaviour, IPointerClickHandler {
-
-    private Stack<Item> items;  //Holds stack of items in slot
+public class Slot : MonoBehaviour, IPointerClickHandler
+{
+    private Stack<Item> items = new Stack<Item>();  //Holds stack of items in slot
     public Text stackText;  //Displays how many items in stack
 
     //Items getter/setter
@@ -25,7 +25,8 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     }
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
         RectTransform slotRect = GetComponent<RectTransform>();
         RectTransform txtRect = stackText.GetComponent<RectTransform>();
         RectTransform iconRect = this.transform.GetChild(0).GetComponent<RectTransform>();
@@ -40,18 +41,21 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
 
     void Awake()
     {
-        items = new Stack<Item>();
+        //items = new Stack<Item>();
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     //Get item type
     public Item itemsInStack()
     {
-        return items.Peek();
+        if(items.Count!=0)
+            return items.Peek();
+        return null;
     }
 
     //Check if slot is empty
@@ -72,7 +76,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     {
         items.Push(item);
         this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item);
-        if (items.Count>1)
+        if (items.Count > 1)
         {
             stackText.text = items.Count.ToString();
         }
@@ -84,13 +88,12 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         Stack<Item> returnStack = items;
         if (this.items.Count != 0 && this.itemsInStack() == items.Peek())
         {
-            while (this.itemsInStack().maxSize > this.items.Count && returnStack.Count!=0)
+            while (this.itemsInStack().maxSize > this.items.Count && returnStack.Count != 0)
             {
                 this.items.Push(returnStack.Pop());
             }
             if (returnStack.Count == 0)
             {
-                Debug.Log("WAHHHHH");
                 FindObjectOfType<Inventory>().EmptySlots++;
             }
         }
@@ -123,7 +126,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         {
             icon = Resources.Load<Sprite>("ItemIcons/potionRed");
         }
-        else if(item.type == Item.ItemType.MANA)
+        else if (item.type == Item.ItemType.MANA)
         {
             icon = Resources.Load<Sprite>("ItemIcons/potionBlue");
         }

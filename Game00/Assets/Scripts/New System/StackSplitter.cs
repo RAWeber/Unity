@@ -4,25 +4,26 @@ using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 
-public class StackSplitter : MonoBehaviour {
-
+public class StackSplitter : MonoBehaviour
+{
     private int max;
     private int counter;
-
 
     public GameObject slot;
     public Text splitterText;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start()
+    {
         max = slot.GetComponent<Slot>().Items.Count;
         counter = Int32.Parse(splitterText.text);
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     public void incrementCounter()
     {
