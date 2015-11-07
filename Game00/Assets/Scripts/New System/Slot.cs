@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using System;
 
-public class Slot : MonoBehaviour, IPointerClickHandler {
-
-    private Stack<Item> items;  //Holds stack of items in slot
+public class Slot : MonoBehaviour, IPointerClickHandler
+{
+    private Stack<Item> items = new Stack<Item>();  //Holds stack of items in slot
     public Text stackText;  //Displays how many items in stack
 
     //Items getter/setter
@@ -25,9 +25,8 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     }
 
     // Use this for initialization
-    void Start () {
-
-        items = new Stack<Item>();
+    void Start()
+    {
         RectTransform slotRect = GetComponent<RectTransform>();
         RectTransform txtRect = stackText.GetComponent<RectTransform>();
         RectTransform iconRect = this.transform.GetChild(0).GetComponent<RectTransform>();
@@ -39,21 +38,30 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         iconRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotRect.sizeDelta.x);
         iconRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotRect.sizeDelta.y);
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+
+    void Awake()
+    {
+        //items = new Stack<Item>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
 
     //Get item type
     public Item itemsInStack()
     {
-        return items.Peek();
+        if(items.Count!=0)
+            return items.Peek();
+        return null;
     }
 
     //Check if slot is empty
     public bool IsEmpty()
     {
+        if (items == null) return true;
         return items.Count == 0;
     }
 
@@ -68,19 +76,46 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     {
         items.Push(item);
         this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item);
-        if (items.Count>1)
+        if (items.Count > 1)
         {
             stackText.text = items.Count.ToString();
         }
     }
 
     //Adds stack of items to slot
-    public void AddItems(Stack<Item> items)
+    public Stack<Item> SetItems(Stack<Item> items)
     {
-        this.items = new Stack<Item>(items);
-        stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
+        Stack<Item> returnStack = items;
+        if (this.items.Count != 0 && this.itemsInStack() == items.Peek())
+        {
+            while (this.itemsInStack().maxSize > this.items.Count && returnStack.Count != 0)
+            {
+                this.items.Push(returnStack.Pop());
+            }
+            if (returnStack.Count == 0)
+            {
+                FindObjectOfType<Inventory>().EmptySlots++;
+            }
+        }
+        else
+        {
+            returnStack = this.items;
+            this.items = new Stack<Item>(items);
+        }
+        stackText.text = this.items.Count > 1 ? this.items.Count.ToString() : string.Empty;
         this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
+        return returnStack;
+    }
 
+    public Item RemoveItem()
+    {
+        Item returnItem = items.Pop();
+        stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
+        if (items.Count == 0)
+        {
+            ClearSlot();
+        }
+        return returnItem;
     }
 
     //Get sprite for item in slot
@@ -91,7 +126,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         {
             icon = Resources.Load<Sprite>("ItemIcons/potionRed");
         }
-        else if(item.type == Item.ItemType.MANA)
+        else if (item.type == Item.ItemType.MANA)
         {
             icon = Resources.Load<Sprite>("ItemIcons/potionBlue");
         }
@@ -119,7 +154,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
     public void ClearSlot()
     {
         items.Clear();
-        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = null;
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = this.GetComponent<Image>().sprite;
         stackText.text = string.Empty;
     }
 
@@ -129,6 +164,10 @@ public class Slot : MonoBehaviour, IPointerClickHandler {
         if (eventData.button == PointerEventData.InputButton.Right && !GameObject.Find("HoverIcon"))
         {
             UseItem();
+        }
+        else
+        {
+            GetComponentInParent<Canvas>().GetComponentInChildren<Inventory>().MoveItem(this.gameObject);
         }
     }
 }
