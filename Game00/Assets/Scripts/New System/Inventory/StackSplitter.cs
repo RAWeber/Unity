@@ -47,7 +47,7 @@ public class StackSplitter : MonoBehaviour
     {
         if (counter != 0)
         {
-            Stack<Item> splitList = new Stack<Item>();
+            //Stack<BaseItem> splitList = new Stack<BaseItem>();
             GetComponentInParent<Canvas>().GetComponentInChildren<Inventory>().createHoverIcon(slot.GetComponent<Slot>());
             GameObject.Find("HoverIcon").GetComponentInChildren<Text>().text = counter > 1 ? counter.ToString() : string.Empty; ;
 
@@ -57,7 +57,7 @@ public class StackSplitter : MonoBehaviour
                 GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Push(slot.GetComponent<Slot>().RemoveItem());
             }
             //GameObject.Find("HoverIcon").GetComponent<Slot>().Items = splitList;
-            if (GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Count != GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Peek().maxSize)
+            if (GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Count != GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Peek().Item.maxSize)
             {
                 FindObjectOfType<Inventory>().EmptySlots--;
             }

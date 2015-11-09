@@ -53,9 +53,7 @@ public class Inventory : MonoBehaviour
         {
             if (!eventSystem.IsPointerOverGameObject(-1) && hoverIcon != null)
             {
-                //from.ClearSlot();
                 Destroy(GameObject.Find("HoverIcon"));
-                //from = null;
                 emptySlots++;
             }
         }
@@ -111,9 +109,9 @@ public class Inventory : MonoBehaviour
     }
 
     //Add item to inventory
-    public void AddItem(Item item)
+    public void AddItem(GameItem item)
     {
-        if (item.maxSize == 1)
+        if (item.Item.maxSize == 1)
         {
             PlaceEmpty(item);
         }
@@ -124,7 +122,7 @@ public class Inventory : MonoBehaviour
     }
 
     //Add item into empty inventory slot
-    private void PlaceEmpty(Item item)
+    private void PlaceEmpty(GameItem item)
     {
         if (emptySlots > 0)
         {
@@ -142,14 +140,14 @@ public class Inventory : MonoBehaviour
     }
 
     //Add item into stack in inventory
-    private void PlaceStack(Item item)
+    private void PlaceStack(GameItem item)
     {
         foreach (GameObject slot in allSlots)
         {
             Slot tmp = slot.GetComponent<Slot>();
             if (!tmp.IsEmpty())
             {
-                if (tmp.itemsInStack().type == item.type && !tmp.isFull())
+                if (tmp.itemsInStack().Item.type == item.Item.type && !tmp.isFull())
                 {
                     tmp.AddItem(item);
                     return;
@@ -197,7 +195,7 @@ public class Inventory : MonoBehaviour
             //If the slot clicked has Items in it, swap the items held with the items in slot
             if (to.Items.Count != 0)
             {
-                Stack<Item> tmpHover = hoverIcon.GetComponent<Slot>().Items;
+                Stack<GameItem> tmpHover = hoverIcon.GetComponent<Slot>().Items;
                 createHoverIcon(to);
                 hoverIcon.GetComponent<Slot>().Items = to.SetItems(tmpHover);
                 if (hoverIcon.GetComponent<Slot>().Items.Count == 0)

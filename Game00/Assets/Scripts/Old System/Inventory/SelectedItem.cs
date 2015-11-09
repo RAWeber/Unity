@@ -8,7 +8,7 @@ using System;
 public class SelectedItem : MonoBehaviour, IDragHandler, IPointerDownHandler ,IPointerUpHandler{
 
     private Text selectedText;
-    private List<BaseItem> playerInventory;
+    private List<BaseItemOld> playerInventory;
     private InventoryWindow inventoryWindow;
 
 	// Use this for initialization

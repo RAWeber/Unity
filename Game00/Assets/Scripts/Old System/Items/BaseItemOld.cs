@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class BaseItem {
+public class BaseItemOld {
 
     private string name;
     private string description;
-    private int itemID;
+    //private int itemID;
 
     public enum ItemTypes
     {
@@ -15,18 +15,18 @@ public class BaseItem {
 
     private ItemTypes itemType;
 
-    public BaseItem() { }
+    public BaseItemOld() { }
 
-    public BaseItem(string n)
+    public BaseItemOld(string n)
     {
         name = n;
         itemType = ItemTypes.WEAPON;
     }
 
-    public BaseItem(Dictionary<string,string> itemDictionary)
+    public BaseItemOld(Dictionary<string,string> itemDictionary)
     {
         name = itemDictionary["ItemName"];
-        itemID = int.Parse(itemDictionary["ItemID"]);
+        //itemID = int.Parse(itemDictionary["ItemID"]);
         itemType = (ItemTypes)System.Enum.Parse(typeof(ItemTypes),itemDictionary["ItemType"]);
     }
 

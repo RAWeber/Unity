@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BaseStatItem : BaseItem {
+public class BaseStatItem : BaseItemOld {
 
     private int strength;
     private int intelligence;

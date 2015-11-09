@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BaseWeapon : BaseStatItem {
+public class BaseWeaponOld : BaseStatItem {
 
     public enum WeaponTypes : int
     {

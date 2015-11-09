@@ -13,7 +13,7 @@ public class InventoryWindow : MonoBehaviour {
     public ToggleGroup itemSlotToggleGroup;
 
     public GameObject draggedIcon;
-    public BaseItem itemBeingDragged;
+    public BaseItemOld itemBeingDragged;
     public bool beingDragged = false;
 
     private const int mousePosOffest = 30;
@@ -24,7 +24,7 @@ public class InventoryWindow : MonoBehaviour {
     private int slotCount;
     private GameObject itemSlot;
     private List<GameObject> inventorySlots;
-    private List<BaseItem> playerInventory;
+    private List<BaseItemOld> playerInventory;
 
 	// Use this for initialization
 	void Start () {
@@ -98,10 +98,10 @@ public class InventoryWindow : MonoBehaviour {
         }
     }
 
-    private Sprite ReturnItemIcon(BaseItem item)
+    private Sprite ReturnItemIcon(BaseItemOld item)
     {
         Sprite icon = new Sprite();
-        if (item.GetItemType() == BaseItem.ItemTypes.EQUIPMENT)
+        if (item.GetItemType() == BaseItemOld.ItemTypes.EQUIPMENT)
         {
             icon = Resources.Load<Sprite>("ItemIcons/armor");
         }

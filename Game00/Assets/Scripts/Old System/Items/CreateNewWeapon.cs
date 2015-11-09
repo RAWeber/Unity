@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CreateNewWeapon : MonoBehaviour {
 
-    private BaseWeapon weapon;
+    private BaseWeaponOld weapon;
     private int type;
     private int qualityVal;
     private string[] qualities = new string[5] {"COMMON", "GOOD", "GREAT", "RARE", "INSANE"};
@@ -14,8 +14,8 @@ public class CreateNewWeapon : MonoBehaviour {
     {
         qualityVal = Random.Range(0, 5);
         type = Random.Range(0, 6);
-        weapon = new BaseWeapon();
-        weapon.WeaponType = (BaseWeapon.WeaponTypes)type;
+        weapon = new BaseWeaponOld();
+        weapon.WeaponType = (BaseWeaponOld.WeaponTypes)type;
         weapon.Name = qualities[qualityVal]+" "+weapon.WeaponType;
         weapon.Description = "I'll figure it out later";
         weapon.Strength = Random.Range(1,11)*qualityVal;

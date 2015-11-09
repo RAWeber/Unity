@@ -7,11 +7,11 @@ using System;
 
 public class Slot : MonoBehaviour, IPointerClickHandler
 {
-    private Stack<Item> items = new Stack<Item>();  //Holds stack of items in slot
+    private Stack<GameItem> items = new Stack<GameItem>();  //Holds stack of items in slot
     public Text stackText;  //Displays how many items in stack
 
     //Items getter/setter
-    public Stack<Item> Items
+    public Stack<GameItem> Items
     {
         get
         {
@@ -51,7 +51,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     }
 
     //Get item type
-    public Item itemsInStack()
+    public GameItem itemsInStack()
     {
         if(items.Count!=0)
             return items.Peek();
@@ -68,14 +68,14 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     //Check if slot is full
     public bool isFull()
     {
-        return itemsInStack().maxSize == items.Count;
+        return itemsInStack().Item.maxSize == items.Count;
     }
 
     //Adds item to stack/slot
-    public void AddItem(Item item)
+    public void AddItem(GameItem item)
     {
         items.Push(item);
-        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item);
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item.GetComponent<GameItem>().Item);
         if (items.Count > 1)
         {
             stackText.text = items.Count.ToString();
@@ -83,12 +83,12 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     }
 
     //Adds stack of items to slot
-    public Stack<Item> SetItems(Stack<Item> items)
+    public Stack<GameItem> SetItems(Stack<GameItem> items)
     {
-        Stack<Item> returnStack = items;
+        Stack<GameItem> returnStack = items;
         if (this.items.Count != 0 && this.itemsInStack() == items.Peek())
         {
-            while (this.itemsInStack().maxSize > this.items.Count && returnStack.Count != 0)
+            while (this.itemsInStack().Item.maxSize > this.items.Count && returnStack.Count != 0)
             {
                 this.items.Push(returnStack.Pop());
             }
@@ -100,16 +100,16 @@ public class Slot : MonoBehaviour, IPointerClickHandler
         else
         {
             returnStack = this.items;
-            this.items = new Stack<Item>(items);
+            this.items = new Stack<GameItem>(items);
         }
         stackText.text = this.items.Count > 1 ? this.items.Count.ToString() : string.Empty;
-        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
+        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack().GetComponent<GameItem>().Item);
         return returnStack;
     }
 
-    public Item RemoveItem()
+    public GameItem RemoveItem()
     {
-        Item returnItem = items.Pop();
+        GameItem returnItem = items.Pop();
         stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
         if (items.Count == 0)
         {
@@ -119,18 +119,9 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     }
 
     //Get sprite for item in slot
-    private Sprite ReturnItemIcon(Item item)
+    private Sprite ReturnItemIcon(BaseItem item)
     {
-        Sprite icon = new Sprite();
-        if (item.type == Item.ItemType.HEALTH)
-        {
-            icon = Resources.Load<Sprite>("ItemIcons/potionRed");
-        }
-        else if (item.type == Item.ItemType.MANA)
-        {
-            icon = Resources.Load<Sprite>("ItemIcons/potionBlue");
-        }
-        return icon;
+        return item.ReturnItemIcon();
     }
 
     //Uses item in slot
@@ -138,7 +129,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     {
         if (!IsEmpty())
         {
-            items.Pop().use();
+            items.Pop().Item.use();
 
             stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
 

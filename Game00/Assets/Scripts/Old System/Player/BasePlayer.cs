@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 public class BasePlayer : MonoBehaviour{
 
-    private List<BaseStat> stats = new List<BaseStat>();
-    private List<BaseItem> inventory = new List<BaseItem>();
+    //private List<BaseStat> stats = new List<BaseStat>();
+    private List<BaseItemOld> inventory = new List<BaseItemOld>();
 
     // Use this for initialization
     void Start()
     {
-        inventory.Add(new BaseItem("Sword"));
-        inventory.Add(new BaseItem("Amor"));
+        inventory.Add(new BaseItemOld("Sword"));
+        inventory.Add(new BaseItemOld("Amor"));
     }
 
     // Update is called once per frame
@@ -21,9 +21,9 @@ public class BasePlayer : MonoBehaviour{
     }
 
 
-    public List<BaseItem> Inventory { get; set; }
+    public List<BaseItemOld> Inventory { get; set; }
 
-    public List<BaseItem> GetInventory()
+    public List<BaseItemOld> GetInventory()
     {
         return inventory;
     }
