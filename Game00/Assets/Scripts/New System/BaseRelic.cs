@@ -20,6 +20,7 @@ public class BaseRelic : BaseItem {
     public override void use()
     {
         Debug.Log("This be a relic");
+        //openCombinationWindow();
     }
 
     public override Sprite ReturnItemIcon()

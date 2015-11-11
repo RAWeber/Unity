@@ -21,7 +21,7 @@ public class GameItem : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        item = ItemDatabase.itemDatabase.Find(x => x.ItemName == itemName);
+        item = ItemDatabase.itemDatabase[itemName];
 	}
 	
 	// Update is called once per frame

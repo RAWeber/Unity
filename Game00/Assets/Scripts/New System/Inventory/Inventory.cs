@@ -20,8 +20,8 @@ public class Inventory : MonoBehaviour
     private CanvasGroup canvasGroup;    //Canvas group to open/close
     private List<GameObject> allSlots;  //List of slots in inventory
     private static GameObject stackSplitter;    //Display stacksplitter when shift clicking stack
-    private GameObject hoverIcon;    //Icon shown when holding item
-    private Slot from, to;   //Used as temporary holders when swapping items
+    private static GameObject hoverIcon;    //Icon shown when holding item
+    private static Slot from, to;   //Used as temporary holders when swapping items
     private int emptySlots; //Total number of empty slots in inventory
 
     //EmptySlots Getter/Setter
@@ -80,7 +80,7 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    //Create inventory window with all slots
+    //Create inventory window with aeftl slots
     private void CreateWindow()
     {
         allSlots = new List<GameObject>();
@@ -109,9 +109,9 @@ public class Inventory : MonoBehaviour
     }
 
     //Add item to inventory
-    public void AddItem(GameItem item)
+    public void AddItem(BaseItem item)
     {
-        if (item.Item.maxSize == 1)
+        if (item.maxSize == 1)
         {
             PlaceEmpty(item);
         }
@@ -122,7 +122,7 @@ public class Inventory : MonoBehaviour
     }
 
     //Add item into empty inventory slot
-    private void PlaceEmpty(GameItem item)
+    private void PlaceEmpty(BaseItem item)
     {
         if (emptySlots > 0)
         {
@@ -140,14 +140,14 @@ public class Inventory : MonoBehaviour
     }
 
     //Add item into stack in inventory
-    private void PlaceStack(GameItem item)
+    private void PlaceStack(BaseItem item)
     {
         foreach (GameObject slot in allSlots)
         {
             Slot tmp = slot.GetComponent<Slot>();
             if (!tmp.IsEmpty())
             {
-                if (tmp.itemsInStack().Item.type == item.Item.type && !tmp.isFull())
+                if (tmp.itemsInStack().type == item.type && !tmp.isFull())
                 {
                     tmp.AddItem(item);
                     return;
@@ -195,7 +195,7 @@ public class Inventory : MonoBehaviour
             //If the slot clicked has Items in it, swap the items held with the items in slot
             if (to.Items.Count != 0)
             {
-                Stack<GameItem> tmpHover = hoverIcon.GetComponent<Slot>().Items;
+                Stack<BaseItem> tmpHover = hoverIcon.GetComponent<Slot>().Items;
                 createHoverIcon(to);
                 hoverIcon.GetComponent<Slot>().Items = to.SetItems(tmpHover);
                 if (hoverIcon.GetComponent<Slot>().Items.Count == 0)
@@ -286,5 +286,17 @@ public class Inventory : MonoBehaviour
         canvasGroup.alpha = 1;
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
+    }
+
+    public void moveInventoryWindow()
+    {
+
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetMouseButton(1))
+        {
+            Vector2 position;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, Input.mousePosition, canvas.worldCamera, out position);
+            this.transform.position = canvas.transform.TransformPoint(position);
+            Debug.Log("MOVING");
+        }
     }
 }

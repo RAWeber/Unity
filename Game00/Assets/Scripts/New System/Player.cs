@@ -31,7 +31,7 @@ public class Player : MonoBehaviour
     {
         if (other.tag == "Item")
         {
-            inventory.AddItem(other.GetComponent<GameItem>());
+            inventory.AddItem(other.GetComponent<GameItem>().Item);
         }else if( other.tag == "Enemy")
         {
             other.GetComponent<BaseEnemy>().damaged(10);
