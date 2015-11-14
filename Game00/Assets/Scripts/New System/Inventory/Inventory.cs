@@ -191,7 +191,8 @@ public class Inventory : MonoBehaviour
         else if (hoverIcon != null)
         {
             to = clickedSlot;
-        
+
+            if (to.name.Equals("ResultSlot")) return;
             //If the slot clicked has Items in it, swap the items held with the items in slot
             if (to.Items.Count != 0)
             {

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameItem : MonoBehaviour {
-
     public string itemName;
     private BaseItem item;
 

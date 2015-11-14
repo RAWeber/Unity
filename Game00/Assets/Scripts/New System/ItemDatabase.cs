@@ -6,9 +6,12 @@ using System.Xml;
 public class ItemDatabase : MonoBehaviour
 {
     public static Dictionary<string, BaseItem> itemDatabase = new Dictionary<string, BaseItem>();
-    public static Dictionary<HashSet<string>, BaseItem> componentDatabase = new Dictionary<HashSet<string>, BaseItem>();
+    public static Dictionary<HashSet<string>, BaseItem> componentDatabase = new Dictionary<HashSet<string>, BaseItem>(new HashSetEqualityComparer<string>());
+    //IEqualityComparer<HashSet<string>> i = HashSet<string>.CreateSetComparer();
 
     public TextAsset itemDatabaseSpreadSheet;
+
+    private HashSet<string> componentRelics;
 
     void Awake()
     {
@@ -21,10 +24,13 @@ public class ItemDatabase : MonoBehaviour
         xmlDocument.LoadXml(itemDatabaseSpreadSheet.text);
         XmlNodeList itemList = xmlDocument.GetElementsByTagName(type);
 
+        componentRelics = new HashSet<string>();
+
         foreach (XmlNode item in itemList)
         {
             Dictionary<string,string> itemData = CreateItemDictionary(item);
             AddItemsToDatabase(itemData);
+            componentRelics = new HashSet<string>();
         }
     }
 
@@ -55,9 +61,15 @@ public class ItemDatabase : MonoBehaviour
                 case "Description":
                     itemDictionary.Add("Description", content.InnerText);
                     break;
-                case "Relics":
-                    HashSet<string> components = CreateComponentSet(content.InnerText);
-                    //componentDatabase.Add(components, );
+                case "Relic01":
+                case "Relic02":
+                case "Relic03":
+                case "Relic04":
+                case "Relic05":
+                    if (!content.InnerText.Equals(""))
+                    {
+                        componentRelics.Add(content.InnerText); ;
+                    }
                     break;
             }
         }
@@ -70,26 +82,19 @@ public class ItemDatabase : MonoBehaviour
         {
             case "WEAPON":
                 itemDatabase.Add(itemData["ItemName"], new BaseWeapon(itemData));
+                componentDatabase.Add(componentRelics, new BaseWeapon(itemData));
                 break;
             case "CONSUMABLE":
                 itemDatabase.Add(itemData["ItemName"], new BaseConsumable(itemData));
                 break;
             case "EQUIPMENT":
                 itemDatabase.Add(itemData["ItemName"], new BaseEquipment(itemData));
+                componentDatabase.Add(componentRelics, new BaseEquipment(itemData));
                 break;
             case "RELIC":
                 itemDatabase.Add(itemData["ItemName"], new BaseRelic(itemData));
                 DropManager.relicNames.Add(itemData["ItemName"]);
                 break;
         }
-    }
-
-    private HashSet<string> CreateComponentSet(string relic)
-    {
-        HashSet<string> componentRelics = new HashSet<string>();
-        string[] relics= relic.Split(',');
-        for(int i = 0;i<relics.Length;i++)
-        componentRelics.Add(relics[i]);
-        return componentRelics;
     }
 }
