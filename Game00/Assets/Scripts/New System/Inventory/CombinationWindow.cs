@@ -66,6 +66,11 @@ public class CombinationWindow : MonoBehaviour {
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
                     allSlots.Add(newSlot);
+
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback.AddListener((eventData) => { updateSet(); });
+                    newSlot.AddComponent<EventTrigger>().triggers.Add(entry);
                 }
                 else if (x % 2 == 0 && y==1)
                 {
@@ -77,6 +82,12 @@ public class CombinationWindow : MonoBehaviour {
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
                     allSlots.Add(newSlot);
+                    //newSlot.GetComponent<Button>().onClick.AddListener(() => { updateSet();});
+
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback.AddListener((eventData) => { updateSet(); });
+                    newSlot.AddComponent<EventTrigger>().triggers.Add(entry);
                 }
                 else if(x % 2 == 1 && y == 1)
                 {
@@ -98,6 +109,11 @@ public class CombinationWindow : MonoBehaviour {
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
                     allSlots.Add(newSlot);
+
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback.AddListener((eventData) => { updateSet(); });
+                    newSlot.AddComponent<EventTrigger>().triggers.Add(entry);
                 }
             }
         }
@@ -119,6 +135,7 @@ public class CombinationWindow : MonoBehaviour {
         }
         catch (KeyNotFoundException)
         {
+            GameObject.Find("ResultSlot").GetComponent<Slot>().ClearSlot();
             Debug.Log(comboRelics.ToString());
         }
     }
