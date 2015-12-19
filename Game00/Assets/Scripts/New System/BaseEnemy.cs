@@ -13,7 +13,7 @@ public class BaseEnemy : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        if (health == 0)
+        if (health <= 0)
         {
             GameObject.Find("DropManager").GetComponent<DropManager>().CreateDrop(this.transform.position);
             Destroy(this.gameObject);
