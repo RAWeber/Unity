@@ -1,8 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class EquipmentWindow : SlotWindow {
+
+    void Awake()
+    {
+        if (GameControl.equipment == null)
+        {
+            DontDestroyOnLoad(gameObject);
+            GameControl.equipment = this;
+        }
+        else if (GameControl.equipment != this)
+        {
+            Destroy(gameObject);
+        }
+    }
 
     // Use this for initialization
     void Start()
@@ -14,6 +26,7 @@ public class EquipmentWindow : SlotWindow {
     protected override void CreateWindow()
     {
         emptySlots = slotTotal = 10;
+        windowName = "Equipment";
 
         int columns = 2;
         int width = columns * slotSize + columns * slotPadding + slotPadding*25;
@@ -37,7 +50,7 @@ public class EquipmentWindow : SlotWindow {
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
 
-                allSlots.Add(newSlot);
+                AllSlots.Add(newSlot.GetComponent<Slot>());
             }
         }
     }

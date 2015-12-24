@@ -2,8 +2,10 @@
 using System.Collections;
 using System;
 
+[Serializable]
 public class RatioLinker : StatLinker
 {
+    [SerializeField]
     private float ratio;
 
     public override int Value

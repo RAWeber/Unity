@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
-using System.Text;
 
 public class ToolTip : MonoBehaviour {
 
@@ -26,6 +24,6 @@ public class ToolTip : MonoBehaviour {
     private void SetText()
     {
         Text itemInfo = this.transform.GetChild(0).GetComponent<Text>();
-        itemInfo.text=slot.GetComponent<Slot>().itemsInStack().getToolTip();
+        itemInfo.text=slot.GetComponent<Slot>().SlotItems().getToolTip();
     }
 }

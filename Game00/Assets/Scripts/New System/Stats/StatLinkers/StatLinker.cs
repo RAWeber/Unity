@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 
+[Serializable]
 public abstract class StatLinker {
 
     public BaseStat LinkedStat { get; private set; }

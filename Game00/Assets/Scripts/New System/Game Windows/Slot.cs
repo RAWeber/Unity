@@ -1,19 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using System;
 
+[Serializable]
 public class Slot : MonoBehaviour, IPointerClickHandler
 {
     private Stack<BaseItem> items = new Stack<BaseItem>();  //Holds stack of items in slot
-    public Text stackText;  //Displays how many items in stack
+    private Text itemText;  //Displays how many items in stack
+    private Image itemIcon;
 
     private static Slot from, to;   //Used as temporary holders when swapping items
 
     private static GameObject toolTip;
-    private static GameObject hoverIcon;    //Icon shown when holding item
+    //private static GameObject hoverIcon;    //Icon shown when holding item
     private static GameObject stackSplitter;    //Display stacksplitter when shift clicking stack
 
     public GameObject toolTipPrefab;
@@ -24,17 +25,22 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     public Stack<BaseItem> Items
     {
         get { return items; }
-        set { items = value; }
+        set {
+            items = value;
+            SetSlot();
+        }
     }
 
     // Use this for initialization
     void Start()
     {
+        itemText = this.transform.GetChild(1).GetComponent<Text>();
+        itemIcon = this.transform.GetChild(0).GetComponent<Image>();
         RectTransform slotRect = GetComponent<RectTransform>();
-        RectTransform txtRect = stackText.GetComponent<RectTransform>();
-        RectTransform iconRect = this.transform.GetChild(0).GetComponent<RectTransform>();
+        RectTransform iconRect = itemIcon.GetComponent<RectTransform>();
+        RectTransform txtRect = itemText.GetComponent<RectTransform>();
         int txtScaleFactor = (int)(slotRect.sizeDelta.x * 0.60);
-        stackText.fontSize = txtScaleFactor;
+        itemText.fontSize = txtScaleFactor;
 
         txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotRect.sizeDelta.x);
         txtRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotRect.sizeDelta.y);
@@ -43,24 +49,21 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     }
 
     //Get item type
-    public BaseItem itemsInStack()
+    public BaseItem SlotItems()
     {
-        if(items.Count!=0)
-            return items.Peek();
-        return null;
+        return items.Count != 0 ? items.Peek() : null;
     }
 
     //Check if slot is empty
     public bool IsEmpty()
     {
-        if (items == null) return true;
         return items.Count == 0;
     }
 
     //Check if slot is full
     public bool isFull()
     {
-        return itemsInStack().MaxSize == items.Count;
+        return IsEmpty() ? SlotItems().MaxSize == items.Count : false;
     }
 
     //Adds item to stack/slot
@@ -69,31 +72,23 @@ public class Slot : MonoBehaviour, IPointerClickHandler
         if (item != null)
         {
             items.Push(item);
-            this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(item);
-            if (items.Count > 1)
-            {
-                stackText.text = items.Count.ToString();
-            }
-        }
-        else
-        {
-            Debug.Log("Added null item to slot");
+            SetSlot();
         }
     }
 
     //Adds stack of items to slot
-    public Stack<BaseItem> SetItems(Stack<BaseItem> items)
+    private Stack<BaseItem> AddItemStack(Stack<BaseItem> items)
     {
         Stack<BaseItem> returnStack = items;
-        if (this.items.Count != 0 && this.itemsInStack() == items.Peek())
+        if (items.Peek().Equals(this.SlotItems()) && !this.isFull())
         {
-            while (this.itemsInStack().MaxSize > this.items.Count && returnStack.Count != 0)
+            while (this.SlotItems().MaxSize > this.items.Count && returnStack.Count != 0)
             {
                 this.items.Push(returnStack.Pop());
             }
             if (returnStack.Count == 0)
             {
-                FindObjectOfType<Inventory>().EmptySlots++;
+                GameControl.inventory.EmptySlots++;
             }
         }
         else
@@ -101,26 +96,47 @@ public class Slot : MonoBehaviour, IPointerClickHandler
             returnStack = this.items;
             this.items = new Stack<BaseItem>(items);
         }
-        stackText.text = this.items.Count > 1 ? this.items.Count.ToString() : string.Empty;
-        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = ReturnItemIcon(itemsInStack());
+        SetSlot();
         return returnStack;
     }
 
     public BaseItem RemoveItem()
     {
         BaseItem returnItem = items.Pop();
-        stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
-        if (items.Count == 0)
-        {
-            ClearSlot();
-        }
+        SetSlot();
         return returnItem;
     }
 
-    //Get sprite for item in slot
-    private Sprite ReturnItemIcon(BaseItem item)
+    private void SetSlot()
     {
-        return item.ReturnItemIcon();
+        SetItemIcon();
+        SetItemText();
+        if (IsEmpty())
+        {
+            GameControl.inventory.EmptySlots++;
+            RemoveToolTip();
+        }
+    }
+
+    //Get sprite for item in slot
+    private void SetItemIcon()
+    {
+        itemIcon.sprite = !IsEmpty() ? SlotItems().ReturnItemIcon() : this.GetComponent<Image>().sprite;
+    }
+
+    private void SetItemText()
+    {
+        itemText.text = this.items.Count > 1 ? this.items.Count.ToString() : string.Empty;
+    }
+
+    //Clears items in slot
+    public void ClearSlot()
+    {
+        if (!IsEmpty())
+        {
+            items.Clear();
+            SetSlot();
+        }
     }
 
     //Uses item in slot
@@ -128,54 +144,30 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     {
         if (!IsEmpty())
         {
-            if (name.Equals("ResultSlot"))
+            if (!name.Equals("ResultSlot") || GameControl.comboWindow.Created)
             {
-                if (GameObject.Find("CombinationWindow").GetComponent<CombinationWindow>().Created)
-                {
-                    items.Peek().use(this);
-                    stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
-                }
-            }
-            else
-            {
-                items.Peek().use(this);
-
-                stackText.text = items.Count > 1 ? items.Count.ToString() : string.Empty;
-            }
-
-            if (IsEmpty())
-            {
-                this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = this.GetComponent<Image>().sprite;
-                RemoveToolTip();
-                FindObjectOfType<Inventory>().EmptySlots++;
+                SlotItems().use(this);
+                SetSlot();
             }
         }
-    }
-
-    //Clears items in slot
-    public void ClearSlot()
-    {
-        items.Clear();
-        this.transform.GetChild(0).gameObject.GetComponent<Image>().sprite = this.GetComponent<Image>().sprite;
-        stackText.text = string.Empty;
     }
 
     //Moves item to new slot in inventory/swap items
     public void MoveItem(Slot clickedSlot)
     {
         //If holding shift, make a splitStack window
-        if (Input.GetKey(KeyCode.LeftShift) && !clickedSlot.IsEmpty() && !GameObject.Find("HoverIcon"))
+        if (Input.GetKey(KeyCode.LeftShift) && !clickedSlot.IsEmpty() && !HoverIcon.hoverIcon)
         {
             from = clickedSlot;
-            CreateSplitter(clickedSlot);
+            CreateSplitter();
             return;
         }
 
-        if (clickedSlot.transform.parent.gameObject.Equals(GameObject.Find("CombinationWindow")))
+        if (clickedSlot.transform.parent.gameObject.Equals(GameControl.comboWindow.gameObject))
         {
-            if (hoverIcon != null)
+            if (HoverIcon.hoverIcon != null)
             {
-                if (hoverIcon.GetComponent<Slot>().itemsInStack().Type != BaseItem.ItemType.RELIC)
+                if (HoverIcon.hoverIcon.GetComponent<Slot>().SlotItems().Type != BaseItem.ItemType.RELIC)
                 {
                     return;
                 }
@@ -184,44 +176,44 @@ public class Slot : MonoBehaviour, IPointerClickHandler
             {
                 if (clickedSlot.name.Equals("ResultSlot"))
                 {
-                    if (GameObject.Find("CombinationWindow").GetComponent<CombinationWindow>().Created)
+                    if (GameControl.comboWindow.Created)
                     {
                         from = clickedSlot;
-                        CreateHoverIcon(from);
+                        CreateHoverIcon();
                         while (!from.IsEmpty())
                         {
-                            GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Push(from.RemoveItem());
+                            HoverIcon.hoverIcon.GetComponent<Slot>().Items.Push(from.RemoveItem());
                         }
-                        GameObject.Find("CombinationWindow").GetComponent<CombinationWindow>().Created = false;
+                        GameControl.comboWindow.Created = false;
                     }
                     return;
                 }
             }
         }
 
-        if (clickedSlot.transform.parent.gameObject.Equals(GameObject.Find("EquipmentWindow")))
+        if (clickedSlot.transform.parent.gameObject.Equals(GameControl.equipment.gameObject))
         {
-            if (hoverIcon != null)
+            if (HoverIcon.hoverIcon != null)
             {
-                if (hoverIcon.GetComponent<Slot>().itemsInStack().Type == BaseItem.ItemType.EQUIPMENT)
+                if (HoverIcon.hoverIcon.GetComponent<Slot>().SlotItems().Type == BaseItem.ItemType.EQUIPMENT)
                 {
-                    BaseEquipment item = (BaseEquipment)(hoverIcon.GetComponent<Slot>().itemsInStack());
+                    BaseEquipment item = (BaseEquipment)(HoverIcon.hoverIcon.GetComponent<Slot>().SlotItems());
                     if (!item.SubType.ToString().Equals(clickedSlot.name))
                     {
                         return;
                     }
-                    GameObject.FindObjectOfType<Player>().Stats.TransferStats(item.Stats);
+                    GameControl.player.Stats.TransferStats(item.Stats);
                 }
-                else if (hoverIcon.GetComponent<Slot>().itemsInStack().Type == BaseItem.ItemType.WEAPON)
+                else if (HoverIcon.hoverIcon.GetComponent<Slot>().SlotItems().Type == BaseItem.ItemType.WEAPON)
                 {
                     if (clickedSlot.name.Equals("MAINHAND") || clickedSlot.name.Equals("OFFHAND"))
                     {
-                        BaseWeapon item = (BaseWeapon)(hoverIcon.GetComponent<Slot>().itemsInStack());
+                        BaseWeapon item = (BaseWeapon)(HoverIcon.hoverIcon.GetComponent<Slot>().SlotItems());
                         if (item.Hand==2 && !clickedSlot.name.Equals("MAINHAND"))
                         {
                             return;
                         }
-                        GameObject.FindObjectOfType<Player>().Stats.TransferStats(item.Stats);
+                        GameControl.player.Stats.TransferStats(item.Stats);
                     }
                     else
                     {
@@ -237,67 +229,68 @@ public class Slot : MonoBehaviour, IPointerClickHandler
             {
                 if (!clickedSlot.IsEmpty())
                 {
-                    GameObject.FindObjectOfType<Player>().Stats.RemoveStats(clickedSlot.GetComponent<Slot>().itemsInStack().Stats);
+                    GameControl.player.Stats.RemoveStats(clickedSlot.GetComponent<Slot>().SlotItems().Stats);
                 }
             }
         }
         //If from is null and slot has items in it, set from equal to slicked slot
-        if (hoverIcon == null)
+        if (HoverIcon.hoverIcon == null)
         {
             if (!clickedSlot.IsEmpty())
             {
                 from = clickedSlot;
 
-                CreateHoverIcon(from);
+                CreateHoverIcon();
                 while (!from.IsEmpty())
                 {
-                    hoverIcon.GetComponent<Slot>().Items.Push(from.RemoveItem());
+                    HoverIcon.hoverIcon.GetComponent<Slot>().Items.Push(from.RemoveItem());
                 }
             }
         }
         //If the hoverIcon exists and has items in it, run code
-        else if (hoverIcon != null)
+        else if (HoverIcon.hoverIcon != null)
         {
             to = clickedSlot;
 
             //If the slot clicked has Items in it, swap the items held with the items in slot
-            if (to.Items.Count != 0)
+            if (!to.IsEmpty())
             {
-                Stack<BaseItem> tmpHover = hoverIcon.GetComponent<Slot>().Items;
-                CreateHoverIcon(to);
-                hoverIcon.GetComponent<Slot>().Items = to.SetItems(tmpHover);
-                if (hoverIcon.GetComponent<Slot>().Items.Count == 0)
+                Stack<BaseItem> tmpHover = HoverIcon.hoverIcon.GetComponent<Slot>().Items;
+                CreateHoverIcon();
+                Stack<BaseItem> leftOvers = to.AddItemStack(tmpHover);
+                if (leftOvers.Count == 0)
                 {
-                    DestroyImmediate(GameObject.Find("HoverIcon"));
+                    DestroyImmediate(HoverIcon.hoverIcon.gameObject);
                 }
                 else
                 {
-                    hoverIcon.GetComponentInChildren<Text>().text = hoverIcon.GetComponent<Slot>().Items.Count > 1 ? hoverIcon.GetComponent<Slot>().Items.Count.ToString() : string.Empty;
+                    HoverIcon.hoverIcon.GetComponent<Slot>().Items = leftOvers;
+                    HoverIcon.hoverIcon.GetComponentInChildren<Text>().text = HoverIcon.hoverIcon.GetComponent<Slot>().Items.Count > 1 ? HoverIcon.hoverIcon.GetComponent<Slot>().Items.Count.ToString() : string.Empty;
                 }
                 to = null;
             }
             //If clicked slot is empty place items into slot
             else
             {
-                to.SetItems(hoverIcon.GetComponent<Slot>().Items);
-                CreateToolTip(to);
+                to.AddItemStack(HoverIcon.hoverIcon.GetComponent<Slot>().Items);
+                CreateToolTip();
                 to = null;
                 from = null;
-                Destroy(GameObject.Find("HoverIcon"));
+                Destroy(HoverIcon.hoverIcon.gameObject);
             }
         }
     }
 
     //create stack splitter under slot
-    private void CreateSplitter(Slot clickedSlot)
+    private void CreateSplitter()
     {
         stackSplitter = (GameObject)Instantiate(splitterPrefab);
         stackSplitter.name = "StackSplitter";
-        stackSplitter.transform.SetParent(GameObject.Find("Canvas").transform, true);
-        stackSplitter.GetComponent<StackSplitter>().Slot = clickedSlot;
+        stackSplitter.transform.SetParent(GameControl.canvas.transform, true);
+        stackSplitter.GetComponent<StackSplitter>().Slot = this;
 
         Vector2 position;
-        Vector3 slotPos = new Vector3(clickedSlot.transform.position.x + clickedSlot.GetComponent<RectTransform>().sizeDelta.x / 2, clickedSlot.transform.position.y - clickedSlot.GetComponent<RectTransform>().sizeDelta.y * 2);
+        Vector3 slotPos = new Vector3(this.transform.position.x + this.GetComponent<RectTransform>().sizeDelta.x / 2, this.transform.position.y - this.GetComponent<RectTransform>().sizeDelta.y * 2);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(this.GetComponentInParent<Canvas>().transform as RectTransform, slotPos, this.GetComponentInParent<Canvas>().worldCamera, out position);
         stackSplitter.transform.position = this.GetComponentInParent<Canvas>().transform.TransformPoint(position);
 
@@ -307,36 +300,36 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     }
 
     //Creates hover icon on mouse
-    public void CreateHoverIcon(Slot slot)
+    public void CreateHoverIcon()
     {
         RemoveToolTip();
-        DestroyImmediate(GameObject.Find("HoverIcon"));
-        hoverIcon = (GameObject)Instantiate(hoverPrefab);
-        hoverIcon.GetComponent<Image>().sprite = slot.transform.GetChild(0).GetComponent<Image>().sprite;
-        hoverIcon.GetComponentInChildren<Text>().text = slot.transform.GetChild(1).GetComponent<Text>().text;
-        hoverIcon.name = "HoverIcon";
 
-        RectTransform hoverTransform = hoverIcon.GetComponent<RectTransform>();
-        RectTransform clickedTransform = slot.GetComponent<RectTransform>();
+        Instantiate(hoverPrefab);
+        HoverIcon.hoverIcon.transform.GetChild(0).GetComponent<Image>().sprite = this.transform.GetChild(0).GetComponent<Image>().sprite;
+        HoverIcon.hoverIcon.GetComponentInChildren<Text>().text = this.transform.GetChild(1).GetComponent<Text>().text;
+        HoverIcon.hoverIcon.name = "HoverIcon";
+
+        RectTransform hoverTransform = HoverIcon.hoverIcon.GetComponent<RectTransform>();
+        RectTransform clickedTransform = this.GetComponent<RectTransform>();
 
         hoverTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, clickedTransform.sizeDelta.x);
         hoverTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, clickedTransform.sizeDelta.y);
-        hoverIcon.transform.SetParent(GameObject.Find("Canvas").transform, true);
-        hoverIcon.transform.localScale = slot.gameObject.transform.localScale;
+        HoverIcon.hoverIcon.transform.SetParent(GameControl.canvas.transform, true);
+        HoverIcon.hoverIcon.transform.localScale = this.gameObject.transform.localScale;
     }
 
     //create tool tip
-    public void CreateToolTip(Slot itemSlot)
+    public void CreateToolTip()
     {
-        if (!itemSlot.IsEmpty())
+        if (!IsEmpty())
         {
-            toolTip = (GameObject)Instantiate(toolTipPrefab);
+            toolTip = Instantiate(toolTipPrefab);
             toolTip.name = "ToolTip";
-            toolTip.transform.SetParent(GameObject.Find("Canvas").transform, true);
-            toolTip.GetComponent<ToolTip>().Slot = itemSlot;
+            toolTip.transform.SetParent(GameControl.canvas.transform, true);
+            toolTip.GetComponent<ToolTip>().Slot = this;
 
             Vector2 position;
-            Vector3 slotPos = new Vector3(itemSlot.transform.position.x + itemSlot.GetComponent<RectTransform>().sizeDelta.x, itemSlot.transform.position.y);
+            Vector3 slotPos = new Vector3(this.transform.position.x + this.GetComponent<RectTransform>().sizeDelta.x, this.transform.position.y);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(this.GetComponentInParent<Canvas>().transform as RectTransform, slotPos, this.GetComponentInParent<Canvas>().worldCamera, out position);
             toolTip.transform.position = this.GetComponentInParent<Canvas>().transform.TransformPoint(position);
         }
@@ -360,4 +353,22 @@ public class Slot : MonoBehaviour, IPointerClickHandler
             MoveItem(this);
         }
     }
+
+    public SlotData SaveInfo()
+    {
+        SlotData data = new SlotData();
+        data.items = items;
+        return data;
+    }
+
+    public void LoadInfo(SlotData data)
+    {
+        Items = data.items;
+    }
+}
+
+[Serializable]
+public class SlotData
+{
+    public Stack<BaseItem> items;  //Holds stack of items in slot
 }

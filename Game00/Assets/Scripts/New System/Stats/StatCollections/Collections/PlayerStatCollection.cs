@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
 
+[Serializable]
 public class PlayerStatCollection : StatCollection {
 
     protected override void SetBaseStats()
@@ -11,7 +11,7 @@ public class PlayerStatCollection : StatCollection {
         LinkableStat armor = CreateStat<LinkableStat>(StatType.ARMOR, 0);
         LinkableStat attackPower = CreateStat<LinkableStat>(StatType.ATTACKPOWER, 50);
         LinkableStat attackSpeed = CreateStat<LinkableStat>(StatType.ATTACKSPEED, 10);
-        LinkableStat attackRange = CreateStat<LinkableStat>(StatType.ATTACKRANGE, 5);
+        /*LinkableStat attackRange = */CreateStat<LinkableStat>(StatType.ATTACKRANGE, 5);
 
         ModifiableStat strength = CreateStat<ModifiableStat>(StatType.STRENGTH, 5);
         ModifiableStat intelligence = CreateStat<ModifiableStat>(StatType.INTELLIGENCE, 5);
@@ -24,7 +24,7 @@ public class PlayerStatCollection : StatCollection {
         mana.AddLinker(new RatioLinker(intelligence, 2));
         mana.SetCurrentValueToMax();
 
-        //armor.AddLinker(new RatioLinker(defense, 5));
+        armor.AddLinker(new RatioLinker(defense, 5));
         attackPower.AddLinker(new RatioLinker(strength, 5));
         attackSpeed.AddLinker(new RatioLinker(dexterity, 0.5f));
     }
@@ -35,6 +35,10 @@ public class PlayerStatCollection : StatCollection {
         if (stat != null)
         {
             stat.BaseValue -= baseValue;
+            if (stat.BaseValue < 0)
+            {
+                stat.BaseValue = 0;
+            }
         }
     }
 }

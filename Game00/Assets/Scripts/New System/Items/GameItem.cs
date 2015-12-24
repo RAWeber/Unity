@@ -17,7 +17,7 @@ public class GameItem : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        Physics.IgnoreCollision(GameObject.FindObjectOfType<Player>().GetComponent<Collider>(), this.GetComponent<Collider>());
+        Physics.IgnoreCollision(GameControl.player.GetComponent<Collider>(), this.GetComponent<Collider>());
         try
         {
             switch (ItemDatabase.itemDatabase[itemName].Type)
@@ -52,6 +52,6 @@ public class GameItem : MonoBehaviour
         this.GetComponent<SphereCollider>().attachedRigidbody.isKinematic = true;
         this.GetComponent<SphereCollider>().isTrigger = true;
         this.GetComponent<SphereCollider>().radius = 5;
-        Physics.IgnoreCollision(GameObject.FindObjectOfType<Player>().GetComponent<Collider>(), this.GetComponent<Collider>(), false);
+        Physics.IgnoreCollision(GameControl.player.GetComponent<Collider>(), this.GetComponent<Collider>(), false);
     }
 }

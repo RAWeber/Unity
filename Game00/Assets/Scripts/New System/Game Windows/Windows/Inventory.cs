@@ -1,13 +1,21 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.UI;
-
 
 public class Inventory : SlotWindow
 {
-
     // Use this for initialization
+    void Awake()
+    {
+        if (GameControl.inventory == null)
+        {
+            GameControl.inventory = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (GameControl.inventory != this)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Start()
     {
         CreateWindow();
@@ -26,7 +34,6 @@ public class Inventory : SlotWindow
         RectTransform window = this.gameObject.GetComponent<RectTransform>();
         window.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         window.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-
         for (int y = 0; y < slotTotal / columns; y++)
         {
             for (int x = 0; x < columns; x++)
@@ -34,12 +41,12 @@ public class Inventory : SlotWindow
                 GameObject newSlot = (GameObject)Instantiate(slotPrefab);
                 RectTransform slotRect = newSlot.GetComponent<RectTransform>();
                 newSlot.name = "Slot";
-                newSlot.transform.SetParent(this.transform);
+                newSlot.transform.SetParent(this.transform, true);
                 slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y - titleSize);
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                 slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
 
-                allSlots.Add(newSlot);
+                AllSlots.Add(newSlot.GetComponent<Slot>());
             }
         }
     }
@@ -58,11 +65,6 @@ public class Inventory : SlotWindow
                 PlaceStack(item);
             }
         }
-        else
-        {
-            Debug.Log("Adding null item to inventory");
-        }
-
     }
 
     //Add item into empty inventory slot
@@ -70,12 +72,11 @@ public class Inventory : SlotWindow
     {
         if (emptySlots > 0)
         {
-            foreach (GameObject slot in allSlots)
+            foreach (Slot slot in AllSlots)
             {
-                Slot tmp = slot.GetComponent<Slot>();
-                if (tmp.IsEmpty())
+                if (slot.IsEmpty())
                 {
-                    tmp.AddItem(item);
+                    slot.AddItem(item);
                     emptySlots--;
                     return;
                 }
@@ -90,14 +91,13 @@ public class Inventory : SlotWindow
     //Add item into stack in inventory
     private void PlaceStack(BaseItem item)
     {
-        foreach (GameObject slot in allSlots)
+        foreach (Slot slot in AllSlots)
         {
-            Slot tmp = slot.GetComponent<Slot>();
-            if (!tmp.IsEmpty())
+            if (!slot.IsEmpty())
             {
-                if (tmp.itemsInStack().Type == item.Type && !tmp.isFull())
+                if (slot.SlotItems().Equals(item) && !slot.isFull())
                 {
-                    tmp.AddItem(item);
+                    slot.AddItem(item);
                     return;
                 }
             }

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 
+[Serializable]
 public class BaseEquipment : BaseItem {
 
     public enum EquipmentType : int
@@ -27,9 +27,9 @@ public class BaseEquipment : BaseItem {
 
     public BaseEquipment(Dictionary<string, string> itemDictionary) : base(itemDictionary)
     {
-        subType = (EquipmentType)System.Enum.Parse(typeof(EquipmentType), itemDictionary["SubType"]);
+        subType = (EquipmentType)Enum.Parse(typeof(EquipmentType), itemDictionary["SubType"]);
         Stats = new EquipmentStatCollection();
-        Stats.AddStat<LinkableStat>(StatType.ARMOR, Int32.Parse(itemDictionary["BaseStat1"]));
+        Stats.AddStat<LinkableStat>(StatType.ARMOR, int.Parse(itemDictionary["BaseStat1"]));
     }
 
     public override void use(Slot slot)
@@ -38,7 +38,7 @@ public class BaseEquipment : BaseItem {
         if (slot.name.Equals("Slot") || slot.name.Equals("ResultSlot"))
         {
             Slot equipSlot = GameObject.Find(this.SubType.ToString()).GetComponent<Slot>();
-            BaseItem tmp = equipSlot.itemsInStack();
+            BaseItem tmp = equipSlot.SlotItems();
             equipSlot.ClearSlot();
             equipSlot.AddItem(this);
             slot.ClearSlot();
@@ -48,15 +48,15 @@ public class BaseEquipment : BaseItem {
             }
             else
             {
-                GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(tmp);
-                GameObject.Find("CombinationWindow").GetComponent<CombinationWindow>().Created = false;
+                GameControl.inventory.AddItemToInventory(tmp);
+                GameControl.comboWindow.Created = false;
             }
-            GameObject.FindObjectOfType<Player>().Stats.TransferStats(this.Stats);
+            GameControl.player.Stats.TransferStats(this.Stats);
         }
         else
         {
-            GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(this);
-            GameObject.FindObjectOfType<Player>().Stats.RemoveStats(this.Stats);
+            GameControl.inventory.AddItemToInventory(this);
+            GameControl.player.Stats.RemoveStats(this.Stats);
             slot.ClearSlot();
         }
     }

@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
 using System.Collections.Generic;
 
+[Serializable]
 public class BaseWeapon : BaseItem {
 
     public enum WeaponTypes : int
@@ -10,7 +10,9 @@ public class BaseWeapon : BaseItem {
         SWORD, DAGGER, AXE, BOW, CROSSBOW, BLOWGUN, STAFF, WAND, WHIP
     }
 
+    [SerializeField]
     private WeaponTypes subType;
+    [SerializeField]
     private int hand;
 
     public WeaponTypes SubType
@@ -37,35 +39,37 @@ public class BaseWeapon : BaseItem {
 
     public BaseWeapon(Dictionary<string, string> itemDictionary) : base(itemDictionary)
     {
-        subType = (WeaponTypes)System.Enum.Parse(typeof(WeaponTypes), itemDictionary["SubType"]);
+        subType = (WeaponTypes)Enum.Parse(typeof(WeaponTypes), itemDictionary["SubType"]);
         Stats = new WeaponStatCollection();
-        Stats.AddStat<LinkableStat>(StatType.ATTACKPOWER, Int32.Parse(itemDictionary["BaseStat1"]));
-        Stats.AddStat<LinkableStat>(StatType.ATTACKSPEED, Int32.Parse(itemDictionary["BaseStat2"]));
-        Stats.AddStat<LinkableStat>(StatType.ATTACKRANGE, Int32.Parse(itemDictionary["BaseStat3"]));
-        hand = Int32.Parse(itemDictionary["BaseStat4"]);
+        Stats.AddStat<LinkableStat>(StatType.ATTACKPOWER, int.Parse(itemDictionary["BaseStat1"]));
+        Stats.AddStat<LinkableStat>(StatType.ATTACKSPEED, int.Parse(itemDictionary["BaseStat2"]));
+        Stats.AddStat<LinkableStat>(StatType.ATTACKRANGE, int.Parse(itemDictionary["BaseStat3"]));
+        hand = int.Parse(itemDictionary["BaseStat4"]);
     }
 
     public override void use(Slot slot)
     {
         GameObject.FindObjectOfType<KeyHandler>().EquipSetActive(true);
+        Slot mainHand = GameObject.Find("MAINHAND").GetComponent<Slot>();
+        Slot offHand = GameObject.Find("OFFHAND").GetComponent<Slot>();
         if (slot.name.Equals("Slot") || slot.name.Equals("ResultSlot"))
         {
             Slot weaponSlot;
-            if (GameObject.Find("MAINHAND").GetComponent<Slot>().IsEmpty() || this.Hand==2 || ((BaseWeapon)GameObject.Find("MAINHAND").GetComponent<Slot>().itemsInStack()).Hand==2)
+            if (mainHand.IsEmpty() || this.Hand==2 || ((BaseWeapon)mainHand.SlotItems()).Hand==2)
             {
-                weaponSlot = GameObject.Find("MAINHAND").GetComponent<Slot>();
+                weaponSlot = mainHand;
                 if (this.Hand==2)
                 {
-                    BaseWeapon item = (BaseWeapon)GameObject.Find("OFFHAND").GetComponent<Slot>().itemsInStack();
-                    GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(item);
-                    GameObject.Find("OFFHAND").GetComponent<Slot>().ClearSlot();
+                    BaseWeapon item = (BaseWeapon)offHand.SlotItems();
+                    GameControl.inventory.AddItemToInventory(item);
+                    offHand.ClearSlot();
                 }
             }
             else
             {
-                weaponSlot = GameObject.Find("OFFHAND").GetComponent<Slot>();
+                weaponSlot = offHand;
             }
-            BaseItem tmp = weaponSlot.itemsInStack();
+            BaseItem tmp = weaponSlot.SlotItems();
             weaponSlot.ClearSlot();
             weaponSlot.AddItem(this);
             slot.ClearSlot();
@@ -75,25 +79,25 @@ public class BaseWeapon : BaseItem {
             }
             else
             {
-                GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(tmp);
-                GameObject.Find("CombinationWindow").GetComponent<CombinationWindow>().Created = false;
+                GameControl.inventory.AddItemToInventory(tmp);
+                GameControl.comboWindow.Created = false;
             }
-            GameObject.FindObjectOfType<Player>().Stats.TransferStats(this.Stats);
+            GameControl.player.Stats.TransferStats(this.Stats);
         }
         else
         {
             if (slot.name.Equals("MAINHAND"))
             {
-                BaseWeapon item = (BaseWeapon)GameObject.Find("OFFHAND").GetComponent<Slot>().itemsInStack();
-                GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(this);
-                GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(item);
-                GameObject.Find("OFFHAND").GetComponent<Slot>().ClearSlot();
+                BaseWeapon item = (BaseWeapon)offHand.SlotItems();
+                GameControl.inventory.AddItemToInventory(this);
+                GameControl.inventory.AddItemToInventory(item);
+                offHand.ClearSlot();
             }
             else
             {
-                GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(this);
+                GameControl.inventory.AddItemToInventory(this);
             }
-            GameObject.FindObjectOfType<Player>().Stats.RemoveStats(this.Stats);
+            GameControl.player.Stats.RemoveStats(this.Stats);
             slot.ClearSlot();
         }
     }

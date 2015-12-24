@@ -36,8 +36,13 @@ public abstract class BaseStat {
         if (obj == null) return false;
 
         BaseStat stat = obj as BaseStat;
-        if ((System.Object)stat == null) return false;
+        if (stat == null) return false;
         //return this.StatID == stat.StatID;
         return this.Name.Equals(stat.Name);
+    }
+
+    public override int GetHashCode()
+    {
+        return this.Name.GetHashCode();
     }
 }

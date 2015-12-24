@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
+using System;
 
 public class Player : MonoBehaviour
 {
-    public int speed;   //Movement speed
-    private Inventory inventory; //Player inventory
+    private string playerName;
+    private int experience = 0;
+    private int level = 1;
     private PlayerStatCollection stats = new PlayerStatCollection();
 
     public PlayerStatCollection Stats
@@ -14,24 +15,32 @@ public class Player : MonoBehaviour
         //set { stats = value; }
     }
 
+    public string PlayerName
+    {
+        get { return playerName; }
+        set { playerName = value; }
+    }
+
+    public int Level
+    {
+        get { return level; }
+        set { level = value; }
+    }
+
     // Use this for initialization
-    void Start()
+    void Awake()
     {
         //Set player inventory
-        inventory = GameObject.FindObjectOfType<Inventory>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        HandleMovement();
-    }
-
-    //Control player movement
-    private void HandleMovement()
-    {
-        float translation = speed * Time.deltaTime;
-        transform.Translate(new Vector3(Input.GetAxis("Horizontal") * translation, Input.GetAxis("Jump") * translation, Input.GetAxis("Vertical") * translation));
+        if (GameControl.player== null)
+        {
+            DontDestroyOnLoad(gameObject);
+            GameControl.player = this;
+        }
+        else if (GameControl.player != this)
+        {
+            GameControl.player.transform.position = this.transform.position;
+            Destroy(gameObject);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -49,7 +58,7 @@ public class Player : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.F))
             {
-                inventory.AddItemToInventory(other.GetComponent<GameItem>().Item);
+                GameControl.inventory.AddItemToInventory(other.GetComponent<GameItem>().Item);
                 Destroy(other.gameObject);
                 GameObject.Find("InteractText").GetComponent<Text>().text = string.Empty;
             }
@@ -66,4 +75,31 @@ public class Player : MonoBehaviour
             GameObject.Find("InteractText").GetComponent<Text>().text = string.Empty;
         }
     }
+
+    public PlayerData SaveInfo()
+    {
+        PlayerData data = new PlayerData();
+        data.playerName = playerName;
+        data.level = level;
+        data.experience = experience;
+        data.stats = stats;
+        return data;
+    }
+
+    public void LoadInfo(PlayerData data)
+    {
+        playerName = data.playerName;
+        level = data.level;
+        experience = data.experience;
+        stats = data.stats;
+    }
+}
+
+[Serializable]
+public class PlayerData
+{
+    public string playerName;
+    public int level;
+    public int experience;
+    public PlayerStatCollection stats;
 }

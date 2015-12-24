@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 
+[Serializable]
 public class VitalStat : LinkableStat {
 
     public event EventHandler OnCurrentValueChange;

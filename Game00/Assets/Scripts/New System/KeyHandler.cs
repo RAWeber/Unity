@@ -7,13 +7,11 @@ public class KeyHandler : MonoBehaviour {
     private GameObject equipWindow;
     private GameObject inventoryWindow;
 
-    private bool initialClose = true;
+    private bool initialClose;
 
     // Use this for initialization
     void Start () {
-        inventoryWindow = GameObject.Find("InventoryWindow");
-        comboWindow = GameObject.Find("CombinationWindow");
-        equipWindow = GameObject.Find("EquipmentWindow");
+        initialClose = true;
     }
 	
 	// Update is called once per frame
@@ -31,7 +29,7 @@ public class KeyHandler : MonoBehaviour {
         //Open & close inventory with 'I'
         if (Input.GetKeyDown(KeyCode.I))
         {
-            if (inventoryWindow.activeSelf)
+            if (GameControl.inventory.gameObject.activeSelf)
             {
                 InventorySetActive(false);
             }
@@ -44,7 +42,7 @@ public class KeyHandler : MonoBehaviour {
         //Open & close combo window
         if (Input.GetKeyDown(KeyCode.C))
         {
-            if (comboWindow.activeSelf)
+            if (GameControl.comboWindow.gameObject.activeSelf)
             {
                 ComboSetActive(false);
             }
@@ -57,7 +55,7 @@ public class KeyHandler : MonoBehaviour {
         //Open & close equipment window
         if (Input.GetKeyDown(KeyCode.E))
         {
-            if (equipWindow.activeSelf)
+            if (GameControl.equipment.gameObject.activeSelf)
             {
                 EquipSetActive(false);
             }
@@ -71,19 +69,19 @@ public class KeyHandler : MonoBehaviour {
     //set state of inventory window
     public void InventorySetActive(bool state)
     {
-        inventoryWindow.SetActive(state);
+        GameControl.inventory.gameObject.SetActive(state);
     }
 
     //set state of combo window
     public void ComboSetActive(bool state)
     {
-        comboWindow.SetActive(state);
+        GameControl.comboWindow.gameObject.SetActive(state);
     }
 
     //set state of equipment window
     public void EquipSetActive(bool state)
     {
-        equipWindow.SetActive(state);
+        GameControl.equipment.gameObject.SetActive(state);
     }
 
     public void CloseAll()

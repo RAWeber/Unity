@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
 using System;
-using System.Collections.Generic;
 
 public class StackSplitter : MonoBehaviour
 {
@@ -55,20 +53,20 @@ public class StackSplitter : MonoBehaviour
         if (counter != 0)
         {
             //Stack<BaseItem> splitList = new Stack<BaseItem>();
-            Slot.CreateHoverIcon(Slot);
-            GameObject.Find("HoverIcon").GetComponentInChildren<Text>().text = counter > 1 ? counter.ToString() : string.Empty; ;
+            Slot.CreateHoverIcon();
+            HoverIcon.hoverIcon.GetComponentInChildren<Text>().text = counter > 1 ? counter.ToString() : string.Empty; ;
 
             for (; counter > 0; counter--)
             {
                 //splitList.Push(slot.GetComponent<Slot>().RemoveItem());
-                GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Push(Slot.RemoveItem());
+                HoverIcon.hoverIcon.GetComponent<Slot>().Items.Push(Slot.RemoveItem());
             }
             //GameObject.Find("HoverIcon").GetComponent<Slot>().Items = splitList;
-            if (GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Count != GameObject.Find("HoverIcon").GetComponent<Slot>().Items.Peek().MaxSize)
+            if (HoverIcon.hoverIcon.GetComponent<Slot>().Items.Count != HoverIcon.hoverIcon.GetComponent<Slot>().Items.Peek().MaxSize)
             {
-                FindObjectOfType<Inventory>().EmptySlots--;
+                GameControl.inventory.EmptySlots--;
             }
         }
-        Destroy(GameObject.Find("StackSplitter"));
+        Destroy(gameObject);
     }
 }

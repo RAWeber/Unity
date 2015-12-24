@@ -1,16 +1,27 @@
 ﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
 public class HoverIcon : MonoBehaviour {
 
-    private Canvas canvas;
+    public static HoverIcon hoverIcon;
+
     private EventSystem eventSystem; //Event System
+
+    void Awake()
+    {
+        if (hoverIcon == null)
+        {
+            DontDestroyOnLoad(gameObject);
+            hoverIcon = this;
+        }
+        else if (hoverIcon != this)
+        {
+            Destroy(gameObject);
+        }
+    }
 
     // Use this for initialization
     void Start () {
-        canvas = GameObject.FindObjectOfType<Canvas>();
         eventSystem = GameObject.FindObjectOfType<EventSystem>();
 	}
 	
@@ -19,15 +30,15 @@ public class HoverIcon : MonoBehaviour {
 
         //Move hover icon with mouse
         Vector2 position;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas.transform as RectTransform, Input.mousePosition, canvas.worldCamera, out position);
-        this.transform.position = canvas.transform.TransformPoint(position);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(GameControl.canvas.transform as RectTransform, Input.mousePosition, GameControl.canvas.worldCamera, out position);
+        this.transform.position = GameControl.canvas.transform.TransformPoint(position);
 
         //Delete inventory items by clicking off inventory
         if (Input.GetMouseButton(0))
         {
             if (!eventSystem.IsPointerOverGameObject(-1))
             {
-                GameObject.FindObjectOfType<Inventory>().EmptySlots++;
+                GameControl.inventory.EmptySlots++;
                 Destroy(this.gameObject);
             }
         }

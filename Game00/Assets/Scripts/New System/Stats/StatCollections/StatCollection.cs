@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
+[Serializable]
 public class StatCollection {
 
-    private Dictionary<StatType, BaseStat> statDictionary;
+    [SerializeField]
+    private StatDictionary<StatType, BaseStat> statDictionary;
 
-    public Dictionary<StatType, BaseStat> StatDictionary
+    public StatDictionary<StatType, BaseStat> StatDictionary
     {
         get { return statDictionary; }
         //set { statDictionary = value; }
@@ -15,7 +17,7 @@ public class StatCollection {
 
     public StatCollection()
     {
-        statDictionary = new Dictionary<StatType, BaseStat>();
+        statDictionary = new StatDictionary<StatType, BaseStat>();
         SetBaseStats();
     }
 
@@ -42,7 +44,7 @@ public class StatCollection {
 
     protected T CreateStat<T>(StatType statType, int baseValue) where T : ModifiableStat
     {
-        T stat = System.Activator.CreateInstance<T>();
+        T stat = Activator.CreateInstance<T>();
         stat.BaseValue = baseValue;
         stat.Name = statType.ToString()[0] + statType.ToString().Substring(1).ToLower();
         statDictionary.Add(statType, stat);
@@ -112,5 +114,19 @@ public class StatCollection {
             }
         }
         return statList;
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null) return false;
+
+        StatCollection statCol = obj as StatCollection;
+        if (statCol == null) return false;
+        return this.StatDictionary.Equals(statCol.StatDictionary);
+    }
+
+    public override int GetHashCode()
+    {
+        return this.StatDictionary.GetHashCode();
     }
 }

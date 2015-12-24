@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+using System;
 
+[Serializable]
 public abstract class BaseItem
 {
     //Enum for types of items
@@ -15,13 +16,19 @@ public abstract class BaseItem
         COMMON,UNCOMMON,RARE
     }
 
+    [SerializeField]
     private StatCollection stats;
-
+    [SerializeField]
     private string itemName;
+    [SerializeField]
     private string description;
+    [SerializeField]
     private int itemID;
+    [SerializeField]
     private ItemType type;   //Item type
+    [SerializeField]
     private Quality quality;
+    [SerializeField]
     private int maxSize; //Max stack size
 
     public string ItemName
@@ -75,8 +82,8 @@ public abstract class BaseItem
         itemID = int.Parse(itemDictionary["ItemID"]);
         itemName = itemDictionary["ItemName"];
         description= itemDictionary["Description"];
-        type = (ItemType)System.Enum.Parse(typeof(ItemType), itemDictionary["ItemType"]);
-        quality = (Quality)System.Enum.Parse(typeof(Quality), itemDictionary["Quality"]);
+        type = (ItemType)Enum.Parse(typeof(ItemType), itemDictionary["ItemType"]);
+        quality = (Quality)Enum.Parse(typeof(Quality), itemDictionary["Quality"]);
         maxSize = int.Parse(itemDictionary["MaxSize"]);
         stats = new StatCollection();
     }
@@ -105,5 +112,19 @@ public abstract class BaseItem
         }
 
         return string.Format("<color="+color+"><size=16>{0}</size></color>\n<color=black><size=14>{1}</size></color><color=green><size=14>{2}</size></color>", itemName, description, statList);
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null) return false;
+
+        BaseItem item = obj as BaseItem;
+        if (item == null) return false;
+        return this.ItemID==item.ItemID && this.ItemName.Equals(item.ItemName) && this.Stats.Equals(item.Stats);
+    }
+
+    public override int GetHashCode()
+    {
+        return this.ItemID.GetHashCode();
     }
 }

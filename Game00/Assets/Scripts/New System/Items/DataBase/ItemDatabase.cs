@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 
@@ -7,12 +6,13 @@ public class ItemDatabase : MonoBehaviour
 {
     public static Dictionary<string, BaseItem> itemDatabase = new Dictionary<string, BaseItem>(); //Dictionary containing all game items
     public static Dictionary<HashSet<string>, BaseItem> componentDatabase = new Dictionary<HashSet<string>, BaseItem>(new HashSetEqualityComparer<string>()); //Dictionary containing relics needed to create each item
+    public static List<string> relicNames = new List<string>();
 
     public TextAsset itemDatabaseSpreadSheet; //XML file
 
     private HashSet<string> componentRelics; //relics needed to create item
 
-    void Awake()
+    void Start()
     {
         ReadItemSpreadSheet("Item");
     }
@@ -118,7 +118,7 @@ public class ItemDatabase : MonoBehaviour
                 break;
             case "RELIC":
                 itemDatabase.Add(itemData["ItemName"], new BaseRelic(itemData));
-                DropManager.relicNames.Add(itemData["ItemName"]);
+                relicNames.Add(itemData["ItemName"]);
                 break;
             default:
                 Debug.Log("[ItemDatabase] " + itemData["ItemName"] + " failed to be added to itemDatabase");

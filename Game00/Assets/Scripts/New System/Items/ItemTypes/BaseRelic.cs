@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+using System;
 
+[Serializable]
 public class BaseRelic : BaseItem {
 
     public enum RelicTypes : int
@@ -9,6 +10,7 @@ public class BaseRelic : BaseItem {
         WEAPON, ARMOR
     }
 
+    [SerializeField]
     private RelicTypes subType;
 
     public BaseRelic(BaseItem item) : base(item)
@@ -18,7 +20,7 @@ public class BaseRelic : BaseItem {
 
     public BaseRelic(Dictionary<string, string> itemDictionary) : base(itemDictionary)
     {
-        subType = (RelicTypes)System.Enum.Parse(typeof(RelicTypes), itemDictionary["SubType"]);
+        subType = (RelicTypes)Enum.Parse(typeof(RelicTypes), itemDictionary["SubType"]);
     }
 
     public override void use(Slot slot)
@@ -26,20 +28,20 @@ public class BaseRelic : BaseItem {
         GameObject.FindObjectOfType<KeyHandler>().ComboSetActive(true);
         if (slot.name.Equals("Slot"))
         {
-            foreach(GameObject s in GameObject.FindObjectOfType<CombinationWindow>().ComboSlots)
+            foreach(Slot s in GameControl.comboWindow.ComboSlots)
             {
-                if (s.name.Equals("ComboSlot") && s.GetComponent<Slot>().IsEmpty())
+                if (s.name.Equals("ComboSlot") && s.IsEmpty())
                 {
-                    s.GetComponent<Slot>().AddItem(this);
+                    s.AddItem(this);
                     slot.ClearSlot();
                     break;
                 }
             }
-            GameObject.FindObjectOfType<CombinationWindow>().updateSet();
+            GameControl.comboWindow.updateSet();
         }
         else
         {
-            GameObject.Find("InventoryWindow").GetComponent<Inventory>().AddItemToInventory(this);
+            GameControl.inventory.AddItemToInventory(this);
             slot.ClearSlot();
         }
     }

@@ -1,17 +1,15 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
-using UnityEngine.UI;
-using System;
 
 public class CombinationWindow : SlotWindow {
 
-    private List<GameObject> comboSlots;
+    private List<Slot> comboSlots;
     private bool created;
     private BaseItem result;
 
     public HashSet<string> comboRelics = new HashSet<string>();
+    private Slot resultSlot;
 
     public bool Created
     {
@@ -19,10 +17,23 @@ public class CombinationWindow : SlotWindow {
         set { created = value; }
     }
 
-    public List<GameObject> ComboSlots
+    public List<Slot> ComboSlots
     {
         get { return comboSlots; }
         set { comboSlots = value; }
+    }
+
+    void Awake()
+    {
+        if (GameControl.comboWindow == null)
+        {
+            DontDestroyOnLoad(gameObject);
+            GameControl.comboWindow = this;
+        }
+        else if (GameControl.comboWindow != this)
+        {
+            Destroy(gameObject);
+        }
     }
 
     // Use this for initialization
@@ -33,8 +44,9 @@ public class CombinationWindow : SlotWindow {
 
     protected override void CreateWindow()
     {
-        comboSlots = new List<GameObject>();
+        comboSlots = new List<Slot>();
         emptySlots = slotTotal = 4;
+        windowName = "Combination";
 
         int width = 3 * slotSize + 3 * slotPadding + slotPadding;
         int height = 3 * slotSize + 3 * slotPadding + slotPadding + titleSize + 50;
@@ -56,7 +68,8 @@ public class CombinationWindow : SlotWindow {
                     slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y - titleSize);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
-                    comboSlots.Add(newSlot);
+                    comboSlots.Add(newSlot.GetComponent<Slot>());
+                    AllSlots.Add(newSlot.GetComponent<Slot>());
 
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
@@ -72,7 +85,8 @@ public class CombinationWindow : SlotWindow {
                     slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y - titleSize);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
-                    comboSlots.Add(newSlot);
+                    comboSlots.Add(newSlot.GetComponent<Slot>());
+                    AllSlots.Add(newSlot.GetComponent<Slot>());
 
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
@@ -88,7 +102,10 @@ public class CombinationWindow : SlotWindow {
                     slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x, -slotPadding * (y + 1) - slotSize * y - titleSize);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
-                }else if(x !=2 && y == 2)
+                    AllSlots.Add(newSlot.GetComponent<Slot>());
+                    resultSlot = newSlot.GetComponent<Slot>();
+                }
+                else if(x !=2 && y == 2)
                 {
                     GameObject newSlot = (GameObject)Instantiate(slotPrefab);
                     RectTransform slotRect = newSlot.GetComponent<RectTransform>();
@@ -97,7 +114,8 @@ public class CombinationWindow : SlotWindow {
                     slotRect.localPosition = new Vector3(slotPadding * (x + 1) + slotSize * x + slotSize/2 + slotPadding/2, -slotPadding * (y + 1) - slotSize * y - titleSize);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, slotSize * canvas.scaleFactor);
                     slotRect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, slotSize * canvas.scaleFactor);
-                    comboSlots.Add(newSlot);
+                    comboSlots.Add(newSlot.GetComponent<Slot>());
+                    AllSlots.Add(newSlot.GetComponent<Slot>());
 
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
@@ -111,12 +129,12 @@ public class CombinationWindow : SlotWindow {
     public void updateSet()
     {
         comboRelics.Clear();
-        GameObject.Find("ResultSlot").GetComponent<Slot>().ClearSlot();
-        foreach (GameObject slot in comboSlots)
+        resultSlot.ClearSlot();
+        foreach (Slot slot in comboSlots)
         {
-            if (!slot.GetComponent<Slot>().IsEmpty())
+            if (!slot.IsEmpty())
             {
-                if (!comboRelics.Add(slot.GetComponent<Slot>().itemsInStack().ItemName))
+                if (!comboRelics.Add(slot.SlotItems().ItemName))
                 {
                     Debug.Log("Duplicate Relic");
                 }
@@ -141,19 +159,19 @@ public class CombinationWindow : SlotWindow {
                         result = new BaseConsumable(ItemDatabase.componentDatabase[comboRelics]);
                         break;
                 }
-                foreach (GameObject slot in comboSlots)
+                foreach (Slot slot in comboSlots)
                 {
-                    if (!slot.GetComponent<Slot>().IsEmpty())
+                    if (!slot.IsEmpty())
                     {
-                        result.Stats.TransferStats(slot.GetComponent<Slot>().itemsInStack().Stats);
+                        result.Stats.TransferStats(slot.SlotItems().Stats);
                     }
                 }
-                GameObject.Find("ResultSlot").GetComponent<Slot>().AddItem(result);
+                resultSlot.AddItem(result);
             }
         }
         catch (KeyNotFoundException)
         {
-            GameObject.Find("ResultSlot").GetComponent<Slot>().ClearSlot();
+            resultSlot.ClearSlot();
         }
     }
 
@@ -161,11 +179,11 @@ public class CombinationWindow : SlotWindow {
     {
         try
         {
-            if (!GameObject.Find("ResultSlot").GetComponent<Slot>().IsEmpty())
+            if (!resultSlot.IsEmpty())
             {
-                foreach (GameObject s in comboSlots)
+                foreach (Slot slot in comboSlots)
                 {
-                    s.GetComponent<Slot>().ClearSlot();
+                    slot.ClearSlot();
                 }
                 created = true;
             }

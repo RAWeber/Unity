@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
 
+[Serializable]
 public class EquipmentStatCollection : StatCollection {
 
     protected override void SetBaseStats()

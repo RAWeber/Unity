@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
+using System;
 
+[Serializable]
 public class BaseConsumable : BaseItem
 {
     public enum ConsumableTypes
@@ -18,7 +19,7 @@ public class BaseConsumable : BaseItem
 
     public BaseConsumable(Dictionary<string, string> itemDictionary) : base(itemDictionary)
     {
-        subType = (ConsumableTypes)System.Enum.Parse(typeof(ConsumableTypes), itemDictionary["SubType"]);
+        subType = (ConsumableTypes)Enum.Parse(typeof(ConsumableTypes), itemDictionary["SubType"]);
     }
 
     public override void use(Slot slot)
