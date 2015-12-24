@@ -31,11 +31,15 @@ public class Slot : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    // Use this for initialization
-    void Start()
+    void Awake()
     {
         itemText = this.transform.GetChild(1).GetComponent<Text>();
         itemIcon = this.transform.GetChild(0).GetComponent<Image>();
+    }
+
+    // Use this for initialization
+    void Start()
+    {
         RectTransform slotRect = GetComponent<RectTransform>();
         RectTransform iconRect = itemIcon.GetComponent<RectTransform>();
         RectTransform txtRect = itemText.GetComponent<RectTransform>();
@@ -63,48 +67,7 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     //Check if slot is full
     public bool isFull()
     {
-        return IsEmpty() ? SlotItems().MaxSize == items.Count : false;
-    }
-
-    //Adds item to stack/slot
-    public void AddItem(BaseItem item)
-    {
-        if (item != null)
-        {
-            items.Push(item);
-            SetSlot();
-        }
-    }
-
-    //Adds stack of items to slot
-    private Stack<BaseItem> AddItemStack(Stack<BaseItem> items)
-    {
-        Stack<BaseItem> returnStack = items;
-        if (items.Peek().Equals(this.SlotItems()) && !this.isFull())
-        {
-            while (this.SlotItems().MaxSize > this.items.Count && returnStack.Count != 0)
-            {
-                this.items.Push(returnStack.Pop());
-            }
-            if (returnStack.Count == 0)
-            {
-                GameControl.inventory.EmptySlots++;
-            }
-        }
-        else
-        {
-            returnStack = this.items;
-            this.items = new Stack<BaseItem>(items);
-        }
-        SetSlot();
-        return returnStack;
-    }
-
-    public BaseItem RemoveItem()
-    {
-        BaseItem returnItem = items.Pop();
-        SetSlot();
-        return returnItem;
+        return !IsEmpty() ? SlotItems().MaxSize == items.Count : false;
     }
 
     private void SetSlot()
@@ -150,6 +113,47 @@ public class Slot : MonoBehaviour, IPointerClickHandler
                 SetSlot();
             }
         }
+    }
+
+    public BaseItem RemoveItem()
+    {
+        BaseItem returnItem = items.Pop();
+        SetSlot();
+        return returnItem;
+    }
+
+    //Adds item to stack/slot
+    public void AddItem(BaseItem item)
+    {
+        if (item != null)
+        {
+            items.Push(item);
+            SetSlot();
+        }
+    }
+
+    //Adds stack of items to slot
+    private Stack<BaseItem> AddItemStack(Stack<BaseItem> items)
+    {
+        Stack<BaseItem> returnStack = items;
+        if (returnStack.Peek().Equals(this.SlotItems()) && !this.isFull())
+        {
+            while (this.SlotItems().MaxSize > this.items.Count && returnStack.Count != 0)
+            {
+                this.items.Push(returnStack.Pop());
+            }
+            if (returnStack.Count == 0)
+            {
+                GameControl.inventory.EmptySlots++;
+            }
+        }
+        else
+        {
+            returnStack = this.items;
+            this.items = new Stack<BaseItem>(returnStack);
+        }
+        SetSlot();
+        return returnStack;
     }
 
     //Moves item to new slot in inventory/swap items

@@ -39,15 +39,15 @@ public class GameControl : MonoBehaviour {
 
         GameData data = new GameData();
         data.playerInfo = player.SaveInfo();
-        //data.inventorySlots = inventory.SaveInfo();
-        //data.equipmentSlots = equipment.SaveInfo();
-        //data.comboSlots = comboWindow.SaveInfo();
+        data.inventorySlots = inventory.SaveInfo();
+        data.equipmentSlots = equipment.SaveInfo();
+        data.comboSlots = comboWindow.SaveInfo();
 
 
         bf.Serialize(file, data);
         file.Close();
 
-        //SaveStartInfo();
+        SaveStartInfo();
     }
 
     public void Load()

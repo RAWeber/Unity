@@ -1,8 +1,19 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Runtime.Serialization;
 
 [Serializable]
 public class StatDictionary<TKey, TValue>: Dictionary<TKey, TValue> {
+
+    public StatDictionary() : base() { }
+    public StatDictionary(int capacity) : base(capacity) { }
+    public StatDictionary(IDictionary<TKey, TValue> dictionary) : base(dictionary) { }
+    public StatDictionary(IEqualityComparer<TKey> comparer) : base(comparer) { }
+    public StatDictionary(int capacity, IEqualityComparer<TKey> comparer) : base(capacity, comparer) { }
+    public StatDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer) : base(dictionary, comparer) { }
+    protected StatDictionary(SerializationInfo info, StreamingContext context) : base(info, context) {
+
+    }
 
     public override bool Equals(object obj)
     {
