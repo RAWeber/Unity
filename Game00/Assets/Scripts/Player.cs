@@ -39,6 +39,7 @@ public class Player : BaseEntity
             DontDestroyOnLoad(gameObject);
             GameControl.player = this;
             combat = GetComponentInChildren<CombatScript>();
+            //Cursor.visible = false;
             base.Awake();
         }
         else if (GameControl.player != this)
@@ -50,7 +51,10 @@ public class Player : BaseEntity
 
     void Update()
     {
-        slider.value = stats.GetStat<VitalStat>(StatType.HEALTH).GetPercentage();
+        if(slider != null)
+        {
+            slider.value = stats.GetStat<VitalStat>(StatType.HEALTH).GetPercentage();
+        }
 
         //Ray ray = Camera.main.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2));
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
